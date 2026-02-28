@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
+<title>PORTFOLIO ADMIN</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#030509;--bg2:#07101e;--bg3:#0c1828;
+  --b:rgba(0,222,180,.12);--b2:rgba(0,222,180,.3);
+  --c:#00deb4;--mag:#ff0088;--amb:#f0b429;
+  --grn:#00e676;--red:#ff4d6d;
+  --tx:#c0d0e4;--mt:rgba(192,208,228,.42);
+  --fd:'Bebas Neue',sans-serif;--fm:'Space Mono',monospace;--fb:'DM Sans',sans-serif;
+  --nh:52px;--sw:220px;--bh:60px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--tx);font-family:var(--fb)}
+
+/* ── LOCK SCREEN ── */
+#lock{position:fixed;inset:0;z-index:9000;background:var(--bg);display:flex;align-items:center;justify-content:center}
+#lock.gone{display:none}
+.lk-box{background:var(--bg2);border:1px solid var(--b);border-radius:16px;padding:40px;width:min(380px,90vw);text-align:center}
+.lk-icon{font-size:2.5rem;margin-bottom:16px}
+.lk-title{font-family:var(--fd);font-size:1.8rem;letter-spacing:4px;color:var(--c);margin-bottom:8px}
+.lk-hint{font-family:var(--fm);font-size:.6rem;letter-spacing:2px;color:var(--mt);margin-bottom:28px}
+.lk-row{position:relative;margin-bottom:16px}
+.lk-row input{width:100%;background:var(--bg3);border:1px solid var(--b);color:var(--tx);padding:14px 46px 14px 16px;border-radius:8px;font-family:var(--fm);font-size:.8rem;outline:none;letter-spacing:3px}
+.lk-row input:focus{border-color:var(--c)}
+.lk-eye{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--mt);cursor:pointer;font-size:1rem}
+.lk-btn{width:100%;padding:14px;background:var(--c);color:#000;border:none;border-radius:8px;font-family:var(--fd);font-size:1rem;letter-spacing:4px;cursor:pointer}
+.lk-btn:hover{opacity:.9}
+.lk-err{font-family:var(--fm);font-size:.6rem;letter-spacing:2px;color:var(--red);margin-top:10px;min-height:1em}
+.lk-note{font-family:var(--fm);font-size:.5rem;letter-spacing:2px;color:var(--mt);margin-top:16px}
+
+/* ── SHELL ── */
+#shell{height:100%;display:grid;grid-template-columns:var(--sw) 1fr;grid-template-rows:var(--nh) 1fr}
+@media(max-width:767px){#shell{grid-template-columns:1fr}}
+
+/* ── TOP BAR ── */
+#topbar{grid-column:1/-1;background:var(--bg2);border-bottom:1px solid var(--b);display:flex;align-items:center;padding:0 20px;gap:16px;z-index:50}
+.tb-logo{font-family:var(--fd);letter-spacing:6px;color:var(--c);font-size:1.2rem;margin-right:auto}
+@media(max-width:767px){.tb-logo{display:none}}
+.tb-ham{display:none;background:none;border:none;color:var(--c);font-size:1.4rem;cursor:pointer}
+@media(max-width:767px){.tb-ham{display:block}}
+.gh-pill{display:flex;align-items:center;gap:8px;font-family:var(--fm);font-size:.55rem;letter-spacing:2px;background:var(--bg3);border:1px solid var(--b);border-radius:100px;padding:6px 14px}
+.gh-dot{width:7px;height:7px;border-radius:50%;background:var(--mt);flex-shrink:0}
+.gh-txt{color:var(--mt)}
+.tb-push{background:var(--c);color:#000;border:none;border-radius:6px;font-family:var(--fd);font-size:.85rem;letter-spacing:3px;padding:8px 20px;cursor:pointer;white-space:nowrap}
+.tb-push:hover{opacity:.9}
+.tb-push:disabled{opacity:.5;cursor:not-allowed}
+
+/* ── SIDEBAR ── */
+#sidebar{background:var(--bg2);border-right:1px solid var(--b);overflow-y:auto;padding:16px 0;display:flex;flex-direction:column}
+@media(max-width:767px){#sidebar{display:none;position:fixed;inset:0;top:var(--nh);z-index:100;overflow-y:auto;padding-bottom:80px}}
+#sidebar.open{display:flex}
+.sb-sec{font-family:var(--fm);font-size:.5rem;letter-spacing:3px;color:var(--mt);padding:16px 20px 6px}
+.sb-btn{display:flex;align-items:center;gap:10px;padding:10px 20px;font-family:var(--fm);font-size:.6rem;letter-spacing:2px;color:var(--mt);background:none;border:none;cursor:pointer;width:100%;text-align:left;transition:all .15s;border-left:2px solid transparent}
+.sb-btn:hover{color:var(--tx);background:rgba(0,222,180,.04)}
+.sb-btn.on{color:var(--c);background:rgba(0,222,180,.06);border-left-color:var(--c)}
+.sb-ico{font-size:1rem;width:20px;text-align:center}
+
+/* ── MAIN ── */
+#main{overflow-y:auto;background:var(--bg)}
+@media(max-width:767px){#main{padding-bottom:calc(var(--bh) + env(safe-area-inset-bottom,0px))}}
+
+/* ── PANELS ── */
+.panel{display:none;padding:28px}
+.panel.on{display:block}
+.pn-title{font-family:var(--fd);font-size:1.8rem;letter-spacing:5px;color:var(--c);margin-bottom:4px}
+.pn-sub{font-family:var(--fm);font-size:.6rem;letter-spacing:2px;color:var(--mt);margin-bottom:28px}
+.pn-sep{height:1px;background:var(--b);margin:28px 0}
+
+/* ── FORM ELEMENTS ── */
+.field{margin-bottom:20px}
+.fl{font-family:var(--fm);font-size:.6rem;letter-spacing:2px;color:var(--mt);display:block;margin-bottom:6px}
+.fi{width:100%;background:var(--bg3);border:1px solid var(--b);color:var(--tx);padding:12px 16px;border-radius:8px;font-family:var(--fb);font-size:.9rem;outline:none;transition:border-color .2s}
+.fi:focus{border-color:var(--c)}
+.fi::placeholder{color:var(--mt)}
+textarea.fi{resize:vertical;min-height:100px}
+.fi-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:500px){.fi-row{grid-template-columns:1fr}}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:8px;padding:11px 22px;font-family:var(--fd);font-size:.9rem;letter-spacing:3px;border-radius:6px;cursor:pointer;border:none;transition:all .2s}
+.btn-p{background:var(--c);color:#000}
+.btn-p:hover{opacity:.9}
+.btn-s{background:var(--bg3);border:1px solid var(--b);color:var(--tx)}
+.btn-s:hover{border-color:var(--c);color:var(--c)}
+.btn-d{background:rgba(255,77,109,.1);border:1px solid rgba(255,77,109,.3);color:var(--red)}
+.btn-d:hover{background:rgba(255,77,109,.2)}
+.save-row{display:flex;align-items:center;gap:16px;margin-top:24px;flex-wrap:wrap}
+.save-ok{font-family:var(--fm);font-size:.6rem;letter-spacing:2px;color:var(--grn);opacity:0;transition:opacity .3s}
+.save-ok.show{opacity:1}
+
+/* ── CARDS (skills, projects etc) ── */
+.card-list{display:flex;flex-direction:column;gap:12px;margin-bottom:24px}
+.card{background:var(--bg2);border:1px solid var(--b);border-radius:10px;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.card-info{flex:1;min-width:0}
+.card-name{font-weight:500;margin-bottom:2px;font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card-sub{font-family:var(--fm);font-size:.55rem;letter-spacing:1px;color:var(--mt)}
+.card-actions{display:flex;gap:8px;flex-shrink:0}
+.icon-btn{background:none;border:1px solid var(--b);border-radius:6px;color:var(--mt);width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.9rem;transition:all .2s;flex-shrink:0}
+.icon-btn:hover{border-color:var(--c);color:var(--c)}
+.icon-btn.del:hover{border-color:var(--red);color:var(--red)}
+
+/* ── ADD FORM ── */
+.add-form{background:var(--bg2);border:1px solid var(--b);border-radius:12px;padding:20px;margin-bottom:20px}
+.add-title{font-family:var(--fd);font-size:1.1rem;letter-spacing:3px;color:var(--c);margin-bottom:16px}
+
+/* ── TOAST ── */
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);font-family:var(--fm);font-size:.65rem;letter-spacing:2px;padding:12px 24px;border-radius:8px;z-index:9999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
+@media(max-width:767px){#toast{bottom:calc(var(--bh) + env(safe-area-inset-bottom,0px) + 12px)}}
+#toast.ok{background:rgba(0,230,118,.15);border:1px solid rgba(0,230,118,.3);color:var(--grn)}
+#toast.er{background:rgba(255,77,109,.15);border:1px solid rgba(255,77,109,.3);color:var(--red)}
+#toast.in{background:rgba(0,222,180,.1);border:1px solid rgba(0,222,180,.2);color:var(--c)}
+#toast.show{opacity:1}
+
+/* ── MOBILE BOTTOM NAV ── */
+#botnav{display:none;position:fixed;bottom:0;left:0;right:0;z-index:99;background:var(--bg2);border-top:1px solid var(--b);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(max-width:767px){#botnav{display:flex}}
+.bn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 4px;gap:3px;background:none;border:none;cursor:pointer;color:var(--mt);font-family:var(--fm);font-size:.45rem;letter-spacing:1px;transition:color .15s}
+.bn.on{color:var(--c)}
+.bn-ico{font-size:1.1rem}
+
+/* ── SYNC STATUS ── */
+#sync-bar{margin-bottom:20px;padding:14px 18px;border-radius:8px;font-family:var(--fm);font-size:.65rem;letter-spacing:1px;line-height:1.6;display:none}
+#sync-bar.ok{background:rgba(0,230,118,.08);border:1px solid rgba(0,230,118,.2);color:var(--grn)}
+#sync-bar.in{background:rgba(0,222,180,.06);border:1px solid rgba(0,222,180,.15);color:var(--c)}
+#sync-bar.er{background:rgba(255,77,109,.08);border:1px solid rgba(255,77,109,.2);color:var(--red)}
+
+/* ── COLOR SWATCHES ── */
+.swatches{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.sw{width:24px;height:24px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:border-color .15s}
+.sw:hover,.sw.on{border-color:#fff}
+
+/* ── AVATAR ── */
+.av-upload{width:100px;height:100px;border-radius:50%;border:2px solid var(--b);display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;font-size:2rem;color:var(--c);transition:border-color .2s;background:var(--bg3)}
+.av-upload:hover{border-color:var(--c)}
+.av-upload img{width:100%;height:100%;object-fit:cover}
+
+/* ── GITHUB MODAL ── */
+#gh-modal{position:fixed;inset:0;z-index:8000;background:rgba(3,5,9,.9);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+#gh-modal.hide{display:none}
+.modal-box{background:var(--bg2);border:1px solid var(--b);border-radius:16px;padding:36px;width:min(480px,90vw)}
+.modal-title{font-family:var(--fd);font-size:1.6rem;letter-spacing:5px;color:var(--c);margin-bottom:8px}
+.modal-sub{font-family:var(--fm);font-size:.6rem;letter-spacing:2px;color:var(--mt);margin-bottom:24px;line-height:1.7}
+.modal-row{display:flex;gap:12px;margin-top:20px;flex-wrap:wrap}
+</style>
+</head>
+<body>
+
+<!-- LOCK -->
+<div id="lock">
+  <div class="lk-box">
+    <div class="lk-icon">⬡</div>
+    <div class="lk-title" id="lk-title">ADMIN LOGIN</div>
+    <div class="lk-hint" id="lk-hint">Enter your password to continue</div>
+    <div class="lk-row">
+      <input type="password" id="lk-pw" placeholder="PASSWORD" autocomplete="current-password"/>
+      <button class="lk-eye" id="lk-eye">👁</button>
+    </div>
+    <button class="lk-btn" id="lk-btn" id="lk-btxt">UNLOCK</button>
+    <div class="lk-err" id="lk-err"></div>
+    <div class="lk-note">SHA-256 hashed · stored in browser only</div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- GITHUB MODAL -->
+<div id="gh-modal" class="hide">
+  <div class="modal-box">
+    <div class="modal-title">CONNECT GITHUB</div>
+    <div class="modal-sub">
+      To sync across ALL devices, connect GitHub.<br>
+      This lets admin push data.json to your repo so every device reads it.<br><br>
+      <strong style="color:var(--c)">Token needs: repo + gist scopes</strong><br>
+      Get it at github.com → Settings → Developer settings → Personal access tokens
+    </div>
+    <div class="field"><label class="fl">GITHUB TOKEN (ghp_...)</label><input class="fi" id="m-tok" placeholder="ghp_xxxxxxxxxxxx"/></div>
+    <div class="field"><label class="fl">GITHUB USERNAME</label><input class="fi" id="m-user" placeholder="yourusername"/></div>
+    <div class="field"><label class="fl">REPO NAME (e.g. yourusername.github.io)</label><input class="fi" id="m-repo" placeholder="yourusername.github.io"/></div>
+    <div class="modal-row">
+      <button class="btn btn-p" id="m-connect">CONNECT & PULL DATA</button>
+      <button class="btn btn-s" id="m-skip">SKIP (local only)</button>
+    </div>
+  </div>
+</div>
+
+<!-- SHELL -->
+<div id="shell">
+
+  <!-- TOP BAR -->
+  <div id="topbar">
+    <button class="tb-ham" id="tb-ham">☰</button>
+    <div class="tb-logo">NOVA ADMIN</div>
+    <div class="gh-pill"><div class="gh-dot" id="gh-dot"></div><span class="gh-txt" id="gh-txt">NOT CONNECTED</span></div>
+    <button class="tb-push" id="tb-push">⬆ PUSH</button>
+  </div>
+
+  <!-- SIDEBAR -->
+  <div id="sidebar">
+    <div class="sb-sec">CONTENT</div>
+    <button class="sb-btn on" data-p="hero">  <span class="sb-ico">⬡</span> HERO</button>
+    <button class="sb-btn" data-p="about">    <span class="sb-ico">◎</span> ABOUT</button>
+    <button class="sb-btn" data-p="skills">   <span class="sb-ico">◈</span> SKILLS</button>
+    <button class="sb-btn" data-p="projects"> <span class="sb-ico">◇</span> PROJECTS</button>
+    <button class="sb-btn" data-p="exp">      <span class="sb-ico">◉</span> EXPERIENCE</button>
+    <button class="sb-btn" data-p="certs">    <span class="sb-ico">◆</span> CERTIFICATIONS</button>
+    <button class="sb-btn" data-p="contact">  <span class="sb-ico">✉</span> CONTACT</button>
+    <button class="sb-btn" data-p="footer">   <span class="sb-ico">▽</span> FOOTER</button>
+    <div class="sb-sec">SYSTEM</div>
+    <button class="sb-btn" data-p="settings"><span class="sb-ico">⚙</span> SETTINGS</button>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div id="main">
+
+    <!-- ── HERO ── -->
+    <div class="panel on" id="p-hero">
+      <div class="pn-title">HERO SECTION</div>
+      <div class="pn-sub">YOUR MAIN LANDING SECTION</div>
+      <div id="sync-bar"></div>
+
+      <div class="fi-row">
+        <div class="field"><label class="fl">FIRST NAME</label><input class="fi" id="h-first" placeholder="ALEX"/></div>
+        <div class="field"><label class="fl">LAST NAME</label><input class="fi" id="h-last" placeholder="NOVA"/></div>
+      </div>
+      <div class="field"><label class="fl">SUBTITLE LINE (shown above name)</label><input class="fi" id="h-sub" placeholder="// FULL-STACK · AI · CREATIVE TECH"/></div>
+      <div class="field"><label class="fl">TITLE / ROLE</label><input class="fi" id="h-title" placeholder="Architect of Digital Futures"/></div>
+      <div class="field"><label class="fl">TAGLINE (1-2 sentences)</label><textarea class="fi" id="h-tag" rows="2"></textarea></div>
+      <div class="field"><label class="fl">AVAILABILITY STATUS</label><input class="fi" id="h-avail" placeholder="OPEN TO WORK"/></div>
+      <div class="pn-sep"></div>
+      <div class="pn-title" style="font-size:1rem">STATS</div>
+      <div class="fi-row">
+        <div class="field"><label class="fl">PROJECTS</label><input class="fi" id="st-pj" type="number" placeholder="48"/></div>
+        <div class="field"><label class="fl">CLIENTS</label><input class="fi" id="st-cl" type="number" placeholder="27"/></div>
+        <div class="field"><label class="fl">YEARS EXP</label><input class="fi" id="st-yr" type="number" placeholder="9"/></div>
+        <div class="field"><label class="fl">COMMITS</label><input class="fi" id="st-km" placeholder="12K+"/></div>
+      </div>
+      <div class="pn-sep"></div>
+      <div class="pn-title" style="font-size:1rem">AVATAR PHOTO</div>
+      <div class="field">
+        <div class="av-upload" id="av-box" title="Click to upload photo">📷</div>
+        <input type="file" id="av-file" accept="image/*" style="display:none"/>
+        <div style="margin-top:8px;font-family:var(--fm);font-size:.55rem;color:var(--mt)">Or paste URL:</div>
+        <input class="fi" id="h-avurl" placeholder="https://..." style="margin-top:6px"/>
+      </div>
+      <div class="field"><label class="fl">AVATAR GLYPH (shown if no photo)</label><input class="fi" id="h-glyph" placeholder="⬡"/></div>
+      <div class="save-row">
+        <button class="btn btn-p" id="save-hero">SAVE HERO</button>
+        <div class="save-ok" id="hero-ok">✓ SAVED</div>
+      </div>
+    </div>
+
+    <!-- ── ABOUT ── -->
+    <div class="panel" id="p-about">
+      <div class="pn-title">ABOUT</div>
+      <div class="pn-sub">YOUR BIO AND HIGHLIGHTS</div>
+      <div class="field"><label class="fl">SECTION HEADING</label><input class="fi" id="ab-head" placeholder="ABOUT"/></div>
+      <div class="field"><label class="fl">BIO PARAGRAPH</label><textarea class="fi" id="ab-bio" rows="4"></textarea></div>
+      <div class="fi-row">
+        <div class="field"><label class="fl">PASSION</label><input class="fi" id="ab-pass" placeholder="Building the impossible"/></div>
+        <div class="field"><label class="fl">FOCUS</label><input class="fi" id="ab-foc" placeholder="Performance + Aesthetics"/></div>
+      </div>
+      <div class="pn-sep"></div>
+      <div class="pn-title" style="font-size:1rem">HIGHLIGHTS</div>
+      <div class="card-list" id="ab-hls-list"></div>
+      <div class="add-form">
+        <div class="add-title">ADD HIGHLIGHT</div>
+        <div class="fi-row">
+          <div class="field"><label class="fl">LABEL</label><input class="fi" id="hl-lbl" placeholder="Based In"/></div>
+          <div class="field"><label class="fl">VALUE</label><input class="fi" id="hl-val" placeholder="Neo Tokyo"/></div>
+        </div>
+        <button class="btn btn-s" id="add-hl">+ ADD</button>
+      </div>
+      <div class="pn-sep"></div>
+      <div class="pn-title" style="font-size:1rem">MARQUEE KEYWORDS</div>
+      <div class="card-list" id="mq-list"></div>
+      <div class="add-form">
+        <div class="fi-row">
+          <div class="field"><label class="fl">KEYWORD</label><input class="fi" id="mq-kw" placeholder="TYPESCRIPT"/></div>
+        </div>
+        <button class="btn btn-s" id="add-mq">+ ADD</button>
+      </div>
+      <div class="save-row">
+        <button class="btn btn-p" id="save-about">SAVE ABOUT</button>
+        <div class="save-ok" id="about-ok">✓ SAVED</div>
+      </div>
+    </div>
+
+    <!-- ── SKILLS ── -->
+    <div class="panel" id="p-skills">
+      <div class="pn-title">SKILLS</div>
+      <div class="pn-sub">YOUR TECHNICAL SKILLS WITH PROGRESS BARS</div>
+      <div class="card-list" id="sk-list"></div>
+      <div class="add-form">
+        <div class="add-title">ADD SKILL</div>
+        <div class="fi-row">
+          <div class="field"><label class="fl">SKILL NAME</label><input class="fi" id="sk-name" placeholder="TypeScript"/></div>
+          <div class="field"><label class="fl">CATEGORY</label><input class="fi" id="sk-cat" placeholder="Language"/></div>
+        </div>
+        <div class="fi-row">
+          <div class="field"><label class="fl">LEVEL (1-100)</label><input class="fi" id="sk-lv" type="number" min="1" max="100" placeholder="90"/></div>
+          <div class="field"><label class="fl">COLOR</label><input class="fi" id="sk-col" type="color" value="#00deb4" style="height:42px;padding:4px"/></div>
+        </div>
+        <button class="btn btn-p" id="add-skill">+ ADD SKILL</button>
+      </div>
+    </div>
+
+    <!-- ── PROJECTS ── -->
+    <div class="panel" id="p-projects">
+      <div class="pn-title">PROJECTS</div>
+      <div class="pn-sub">YOUR PORTFOLIO PROJECTS</div>
+      <div class="card-list" id="pj-list"></div>
+      <div class="add-form">
+        <div class="add-title">ADD PROJECT</div>
+        <div class="fi-row">
+          <div class="field"><label class="fl">TITLE</label><input class="fi" id="pj-name" placeholder="SYNAPSE AI"/></div>
+          <div class="field"><label class="fl">SUBTITLE</label><input class="fi" id="pj-sub" placeholder="Neural interface platform"/></div>
+        </div>
+        <div class="field"><label class="fl">DESCRIPTION</label><textarea class="fi" id="pj-desc" rows="2"></textarea></div>
+        <div class="fi-row">
+          <div class="field"><label class="fl">CATEGORY</label><input class="fi" id="pj-cat" placeholder="AI/ML"/></div>
+          <div class="field"><label class="fl">STATUS</label><input class="fi" id="pj-stat" placeholder="LIVE"/></div>
+        </div>
+        <div class="field"><label class="fl">TECH STACK (comma separated)</label><input class="fi" id="pj-tech" placeholder="React, Node.js, TypeScript"/></div>
+        <div class="fi-row">
+          <div class="field"><label class="fl">LIVE URL</label><input class="fi" id="pj-live" placeholder="https://..."/></div>
+          <div class="field"><label class="fl">GITHUB URL</label><input class="fi" id="pj-gh" placeholder="https://github.com/..."/></div>
+        </div>
+        <div class="field"><label class="fl">ACCENT COLOR</label><input class="fi" id="pj-col" type="color" value="#00deb4" style="height:42px;padding:4px"/></div>
+        <button class="btn btn-p" id="add-proj">+ ADD PROJECT</button>
+      </div>
+    </div>
+
+    <!-- ── EXPERIENCE ── -->
+    <div class="panel" id="p-exp">
+      <div class="pn-title">EXPERIENCE</div>
+      <div class="pn-sub">YOUR WORK HISTORY</div>
+      <div class="card-list" id="ex-list"></div>
+      <div class="add-form">
+        <div class="add-title">ADD EXPERIENCE</div>
+        <div class="fi-row">
+          <div class="field"><label class="fl">COMPANY</label><input class="fi" id="ex-company" placeholder="ANTHROPIC"/></div>
+          <div class="field"><label class="fl">ROLE / TITLE</label><input class="fi" id="ex-role" placeholder="Principal Engineer"/></div>
+        </div>
+        <div class="field"><label class="fl">PERIOD</label><input class="fi" id="ex-period" placeholder="2023–Present"/></div>
+        <div class="field"><label class="fl">DESCRIPTION</label><textarea class="fi" id="ex-desc" rows="2"></textarea></div>
+        <div class="field"><label class="fl">HIGHLIGHT / ACHIEVEMENT</label><input class="fi" id="ex-hl" placeholder="500M+ requests/day"/></div>
+        <button class="btn btn-p" id="add-exp">+ ADD EXPERIENCE</button>
+      </div>
+    </div>
+
+    <!-- ── CERTS ── -->
+    <div class="panel" id="p-certs">
+      <div class="pn-title">CERTIFICATIONS</div>
+      <div class="pn-sub">YOUR CERTIFICATES AND CREDENTIALS</div>
+      <div class="card-list" id="ce-list"></div>
+      <div class="add-form">
+        <div class="add-title">ADD CERTIFICATION</div>
+        <div class="fi-row">
+          <div class="field"><label class="fl">TITLE</label><input class="fi" id="ce-title" placeholder="AWS Solutions Architect"/></div>
+          <div class="field"><label class="fl">ISSUER</label><input class="fi" id="ce-issuer" placeholder="Amazon Web Services"/></div>
+        </div>
+        <div class="fi-row">
+          <div class="field"><label class="fl">DATE</label><input class="fi" id="ce-date" placeholder="2024"/></div>
+          <div class="field"><label class="fl">CATEGORY</label><input class="fi" id="ce-cat" placeholder="Cloud"/></div>
+        </div>
+        <div class="field"><label class="fl">ACCENT COLOR</label><input class="fi" id="ce-col" type="color" value="#f0b429" style="height:42px;padding:4px"/></div>
+        <div class="field"><label class="fl">CERTIFICATE IMAGE URL (optional)</label><input class="fi" id="ce-img" placeholder="https://..."/></div>
+        <button class="btn btn-p" id="add-cert">+ ADD CERT</button>
+      </div>
+    </div>
+
+    <!-- ── CONTACT ── -->
+    <div class="panel" id="p-contact">
+      <div class="pn-title">CONTACT</div>
+      <div class="pn-sub">YOUR CONTACT DETAILS</div>
+      <div class="field"><label class="fl">INTRO TEXT</label><textarea class="fi" id="ct-intro" rows="3"></textarea></div>
+      <div class="fi-row">
+        <div class="field"><label class="fl">EMAIL</label><input class="fi" id="ct-email" type="email" placeholder="hello@email.com"/></div>
+        <div class="field"><label class="fl">PHONE</label><input class="fi" id="ct-phone" placeholder="+1 (555) 0100"/></div>
+      </div>
+      <div class="fi-row">
+        <div class="field"><label class="fl">GITHUB</label><input class="fi" id="ct-gh" placeholder="github.com/username"/></div>
+        <div class="field"><label class="fl">LINKEDIN</label><input class="fi" id="ct-li" placeholder="linkedin.com/in/username"/></div>
+      </div>
+      <div class="fi-row">
+        <div class="field"><label class="fl">TWITTER</label><input class="fi" id="ct-tw" placeholder="@username"/></div>
+        <div class="field"><label class="fl">LOCATION</label><input class="fi" id="ct-loc" placeholder="San Francisco, CA"/></div>
+      </div>
+      <div class="save-row">
+        <button class="btn btn-p" id="save-contact">SAVE CONTACT</button>
+        <div class="save-ok" id="contact-ok">✓ SAVED</div>
+      </div>
+    </div>
+
+    <!-- ── FOOTER ── -->
+    <div class="panel" id="p-footer">
+      <div class="pn-title">FOOTER</div>
+      <div class="pn-sub">FOOTER LOGO AND LINKS</div>
+      <div class="field"><label class="fl">LOGO TEXT</label><input class="fi" id="ft-logo" placeholder="ALEX/NOVA"/></div>
+      <div class="field"><label class="fl">COPYRIGHT TEXT</label><input class="fi" id="ft-copy" placeholder="© 2025 Alex Nova"/></div>
+      <div class="field"><label class="fl">TAGLINE</label><input class="fi" id="ft-tag" placeholder="PORTFOLIO v1.0"/></div>
+      <div class="pn-sep"></div>
+      <div class="pn-title" style="font-size:1rem">FOOTER LINKS</div>
+      <div class="card-list" id="ftl-list"></div>
+      <div class="add-form">
+        <div class="fi-row">
+          <div class="field"><label class="fl">LABEL</label><input class="fi" id="ftl-lbl" placeholder="GitHub"/></div>
+          <div class="field"><label class="fl">URL</label><input class="fi" id="ftl-url" placeholder="https://github.com/..."/></div>
+        </div>
+        <button class="btn btn-s" id="add-ftl">+ ADD LINK</button>
+      </div>
+      <div class="save-row">
+        <button class="btn btn-p" id="save-footer">SAVE FOOTER</button>
+        <div class="save-ok" id="footer-ok">✓ SAVED</div>
+      </div>
+    </div>
+
+    <!-- ── SETTINGS ── -->
+    <div class="panel" id="p-settings">
+      <div class="pn-title">SETTINGS</div>
+      <div class="pn-sub">GITHUB SYNC + DATA MANAGEMENT</div>
+
+      <div style="background:var(--bg2);border:1px solid var(--b);border-radius:12px;padding:20px;margin-bottom:24px">
+        <div style="font-family:var(--fd);font-size:1.1rem;letter-spacing:3px;color:var(--c);margin-bottom:12px">GITHUB SYNC</div>
+        <div style="font-family:var(--fm);font-size:.6rem;letter-spacing:1px;color:var(--mt);margin-bottom:16px;line-height:1.8">
+          Connect GitHub to sync across all devices.<br>
+          Admin pushes data.json to your repo → portfolio.html fetches it on load.<br>
+          No GitHub = local only (single device).
+        </div>
+        <div class="field"><label class="fl">GITHUB TOKEN</label><input class="fi" id="cfg-tok" placeholder="ghp_..."/></div>
+        <div class="fi-row">
+          <div class="field"><label class="fl">USERNAME</label><input class="fi" id="cfg-user" placeholder="yourusername"/></div>
+          <div class="field"><label class="fl">REPO NAME</label><input class="fi" id="cfg-repo" placeholder="yourusername.github.io"/></div>
+        </div>
+        <div class="save-row">
+          <button class="btn btn-p" id="cfg-save">SAVE CONFIG</button>
+          <button class="btn btn-s" id="cfg-push">⬆ PUSH NOW</button>
+          <button class="btn btn-s" id="cfg-pull">⬇ PULL NOW</button>
+        </div>
+      </div>
+
+      <div style="background:var(--bg2);border:1px solid var(--b);border-radius:12px;padding:20px;margin-bottom:24px">
+        <div style="font-family:var(--fd);font-size:1.1rem;letter-spacing:3px;color:var(--c);margin-bottom:12px">SPLASH SCREEN</div>
+        <div class="fi-row">
+          <div class="field"><label class="fl">LOGO TEXT</label><input class="fi" id="sp-logo" placeholder="NOVA"/></div>
+          <div class="field"><label class="fl">TAGLINE</label><input class="fi" id="sp-tag" placeholder="BOOTING NEURAL INTERFACE"/></div>
+        </div>
+        <div class="save-row">
+          <button class="btn btn-p" id="save-splash">SAVE SPLASH</button>
+          <div class="save-ok" id="splash-ok">✓ SAVED</div>
+        </div>
+      </div>
+
+      <div style="background:var(--bg2);border:1px solid var(--b);border-radius:12px;padding:20px;margin-bottom:24px">
+        <div style="font-family:var(--fd);font-size:1.1rem;letter-spacing:3px;color:var(--c);margin-bottom:12px">DATA</div>
+        <div class="save-row">
+          <button class="btn btn-s" id="exp-btn">⬇ EXPORT JSON</button>
+          <button class="btn btn-s" id="imp-btn">⬆ IMPORT JSON</button>
+          <input type="file" id="imp-file" accept=".json" style="display:none"/>
+        </div>
+        <div class="pn-sep"></div>
+        <button class="btn btn-d" id="reset-btn">⚠ RESET ALL DATA</button>
+        <div style="font-family:var(--fm);font-size:.55rem;color:var(--mt);margin-top:8px">This clears all localStorage data and reloads. Cannot be undone.</div>
+      </div>
+
+      <div style="background:var(--bg2);border:1px solid var(--b);border-radius:12px;padding:20px">
+        <div style="font-family:var(--fd);font-size:1.1rem;letter-spacing:3px;color:var(--c);margin-bottom:12px">CHANGE PASSWORD</div>
+        <button class="btn btn-s" id="chpw-btn">CHANGE PASSWORD</button>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /shell -->
+
+<!-- MOBILE BOTTOM NAV -->
+<div id="botnav">
+  <button class="bn on" data-p="hero"><span class="bn-ico">⬡</span>HERO</button>
+  <button class="bn" data-p="skills"><span class="bn-ico">◈</span>SKILLS</button>
+  <button class="bn" data-p="projects"><span class="bn-ico">◇</span>PROJ</button>
+  <button class="bn" data-p="exp"><span class="bn-ico">◉</span>EXP</button>
+  <button class="bn" data-p="settings"><span class="bn-ico">⚙</span>SETTINGS</button>
+</div>
+
+<script>
+// ════════════════════════════════════════════════════════════
+// THE ONE KEY THAT CONNECTS ADMIN AND PORTFOLIO
+//
+// admin.html  → writes to localStorage['PF_DATA']
+// portfolio.html → reads from localStorage['PF_DATA']
+//
+// That's it. One key. Both files. Instant sync on same device.
+// For different devices: GitHub push/pull via data.json
+// ════════════════════════════════════════════════════════════
+
+var DATA_KEY = 'PF_DATA';   // THE one shared key
+
+// ── HELPERS ──────────────────────────────────────────────────
+function $(id){ return document.getElementById(id); }
+function val(id){ return $(id) ? $(id).value.trim() : ''; }
+function setVal(id, v){ if($(id)) $(id).value = v||''; }
+function uid(){ return Math.random().toString(36).slice(2,9); }
+
+var _toastTimer;
+function toast(msg, type, ms){
+  var t = $('toast');
+  t.textContent = msg;
+  t.className   = 'show ' + (type||'in');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(function(){ t.className = ''; }, ms||3000);
+}
+
+function showSaved(id){
+  var el = $(id);
+  if(!el) return;
+  el.classList.add('show');
+  setTimeout(function(){ el.classList.remove('show'); }, 2500);
+}
+
+function setSync(msg, type){
+  var el = $('sync-bar');
+  if(!el) return;
+  el.innerHTML  = msg;
+  el.className  = type;
+  el.style.display = msg ? 'block' : 'none';
+}
+
+// ── SHA-256 (for password) ────────────────────────────────────
+async function sha256(str){
+  var buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(function(b){ return b.toString(16).padStart(2,'0'); }).join('');
+}
+
+// ── STATE ─────────────────────────────────────────────────────
+var S = {
+  splash:  {logo:'NOVA', tagline:'BOOTING NEURAL INTERFACE'},
+  hero:    {firstName:'ALEX', lastName:'NOVA', subtitle:'// FULL-STACK · AI · CREATIVE TECH',
+             title:'Architect of Digital Futures', tagline:'I build systems that think.',
+             avatarUrl:'', glyph:'⬡', availability:'OPEN TO WORK',
+             stats:{projects:48, clients:27, yearsExp:9, commits:'12K+'}},
+  about:   {heading:'ABOUT', bio:'A full-stack engineer.', passion:'Building the impossible',
+             focus:'Performance + Aesthetics', highlights:[
+               {id:uid(),label:'Based In',value:'Neo Tokyo'},
+               {id:uid(),label:'Experience',value:'9 Years'},
+               {id:uid(),label:'Speciality',value:'Full-Stack'},
+               {id:uid(),label:'Status',value:'Available'}
+             ]},
+  marqueeItems: ['TYPESCRIPT','RUST','PYTHON','REACT','NODE.JS','WEBGL','AI/ML','KUBERNETES'],
+  skills: [
+    {id:uid(),name:'TypeScript',level:95,category:'Language',color:'#3178c6'},
+    {id:uid(),name:'React',level:97,category:'Frontend',color:'#61dafb'},
+    {id:uid(),name:'Node.js',level:93,category:'Backend',color:'#68a063'},
+    {id:uid(),name:'Python',level:90,category:'Language',color:'#ffd43b'}
+  ],
+  projects: [
+    {id:uid(),title:'SYNAPSE AI',subtitle:'Neural interface platform',description:'AI inference platform.',tech:['Rust','React'],category:'AI/ML',status:'LIVE',color:'#00f0c8',liveUrl:'',githubUrl:''},
+    {id:uid(),title:'PHANTOM GRID',subtitle:'Compute mesh',description:'P2P GPU compute.',tech:['Solidity','Rust'],category:'Web3',status:'LIVE',color:'#9d5cff',liveUrl:'',githubUrl:''}
+  ],
+  experience: [
+    {id:uid(),company:'ANTHROPIC',role:'Principal Engineer',period:'2023–Present',description:'AI inference infrastructure.',highlight:'500M+ AI requests/day'},
+    {id:uid(),company:'STARTUP',role:'Senior Engineer',period:'2020–2023',description:'0 to 2M users.',highlight:'$45M ARR in 24 months'}
+  ],
+  certifications: [
+    {id:uid(),title:'AWS Solutions Architect',issuer:'Amazon Web Services',date:'2024',category:'Cloud',color:'#f0b429',image:''},
+    {id:uid(),title:'CKA',issuer:'CNCF',date:'2023',category:'DevOps',color:'#326ce5',image:''}
+  ],
+  contact: {email:'hello@email.com',phone:'+1 (555) 0100',github:'github.com/username',
+             linkedin:'linkedin.com/in/username',twitter:'@username',location:'San Francisco, CA',
+             intro:'Whether it\'s a product idea or conversation — response within 24 hours.'},
+  footer: {logo:'ALEX/NOVA', copyright:'© 2025 Alex Nova', tagline:'PORTFOLIO v1.0',
+           links:[{id:uid(),label:'GitHub',url:'#'},{id:uid(),label:'LinkedIn',url:'#'}]},
+};
+
+// GitHub config (not part of PF_DATA — stored separately)
+var TOKEN = '', GH_USER = '', GH_REPO = '';
+
+// ── SAVE / LOAD ───────────────────────────────────────────────
+function save(){
+  // CRITICAL: save to PF_DATA — same key portfolio.html reads
+  S._ts = Date.now();   // timestamp so portfolio knows which data is newer
+  try{ localStorage.setItem(DATA_KEY, JSON.stringify(S)); }catch(e){}
+}
+
+function load(){
+  try{
+    var raw = localStorage.getItem(DATA_KEY);
+    if(!raw) return;
+    var d = JSON.parse(raw);
+    // Merge each section
+    ['splash','hero','about','marqueeItems','skills','projects',
+     'experience','certifications','contact','footer'].forEach(function(k){
+      if(d[k] != null) S[k] = d[k];
+    });
+    // Ensure IDs exist on array items
+    ['skills','projects','experience','certifications'].forEach(function(k){
+      if(Array.isArray(S[k])) S[k] = S[k].map(function(x){
+        return x.id ? x : Object.assign({id:uid()}, x);
+      });
+    });
+  }catch(e){}
+}
+
+// ── LOCK SCREEN ───────────────────────────────────────────────
+(function(){
+  var stored = localStorage.getItem('ADMIN_PW');
+  if(!stored){
+    $('lk-title').textContent = 'SET PASSWORD';
+    $('lk-hint').textContent  = 'First time — choose a password (min 6 chars)';
+    $('lk-btn').textContent   = 'SET PASSWORD';
+  }
+  // Already unlocked this session?
+  if(sessionStorage.getItem('ADMIN_OK') === '1') unlock();
+})();
+
+function unlock(){ $('lock').classList.add('gone'); }
+
+$('lk-btn').addEventListener('click', async function(){
+  var pw = $('lk-pw').value;
+  if(!pw || pw.length < 6){ $('lk-err').textContent = 'Min 6 characters'; return; }
+  var hash  = await sha256(pw);
+  var stored = localStorage.getItem('ADMIN_PW');
+  if(!stored){
+    localStorage.setItem('ADMIN_PW', hash);
+    sessionStorage.setItem('ADMIN_OK', '1');
+    unlock(); boot();
+  } else if(hash === stored){
+    sessionStorage.setItem('ADMIN_OK', '1');
+    unlock(); boot();
+  } else {
+    $('lk-err').textContent = 'Wrong password';
+    $('lk-pw').value = '';
+  }
+});
+$('lk-pw').addEventListener('keydown', function(e){ if(e.key==='Enter') $('lk-btn').click(); });
+$('lk-eye').addEventListener('click',  function(){
+  var i = $('lk-pw'); i.type = i.type==='password'?'text':'password';
+});
+
+// ── NAVIGATION ────────────────────────────────────────────────
+var currentPanel = 'hero';
+function navTo(name){
+  document.querySelectorAll('.panel').forEach(function(p){ p.classList.remove('on'); });
+  var panel = $('p-'+name);
+  if(panel) panel.classList.add('on');
+  document.querySelectorAll('.sb-btn,.bn').forEach(function(b){ b.classList.toggle('on', b.dataset.p===name); });
+  currentPanel = name;
+  // Close mobile sidebar
+  $('sidebar').classList.remove('open');
+  // Scroll to top
+  $('main').scrollTop = 0;
+  // Load form if panel has one
+  if(name==='hero')     fillHero();
+  if(name==='about')    fillAbout();
+  if(name==='contact')  fillContact();
+  if(name==='footer')   fillFooter();
+  if(name==='settings') fillSettings();
+}
+
+document.querySelectorAll('.sb-btn').forEach(function(b){
+  b.addEventListener('click', function(){ navTo(b.dataset.p); });
+});
+document.querySelectorAll('.bn').forEach(function(b){
+  b.addEventListener('click', function(){ navTo(b.dataset.p); });
+});
+$('tb-ham').addEventListener('click', function(){ $('sidebar').classList.toggle('open'); });
+
+// ── FILL FORMS ────────────────────────────────────────────────
+function fillHero(){
+  var h = S.hero;
+  setVal('h-first', h.firstName); setVal('h-last',  h.lastName);
+  setVal('h-sub',   h.subtitle);  setVal('h-title', h.title);
+  setVal('h-tag',   h.tagline);   setVal('h-avail', h.availability);
+  setVal('h-glyph', h.glyph);     setVal('h-avurl', '');
+  var st = h.stats||{};
+  setVal('st-pj', st.projects); setVal('st-cl', st.clients);
+  setVal('st-yr', st.yearsExp); setVal('st-km', st.commits);
+  // Avatar preview
+  var av = $('av-box');
+  if(av) av.innerHTML = h.avatarUrl ? '<img src="'+h.avatarUrl+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%"/>' : '📷';
+}
+function fillAbout(){
+  var ab = S.about;
+  setVal('ab-head', ab.heading); setVal('ab-bio',  ab.bio);
+  setVal('ab-pass', ab.passion); setVal('ab-foc',  ab.focus);
+  renderHLs(); renderMQ();
+}
+function fillContact(){
+  var ct = S.contact;
+  setVal('ct-intro', ct.intro);  setVal('ct-email', ct.email);
+  setVal('ct-phone', ct.phone);  setVal('ct-gh',    ct.github);
+  setVal('ct-li',    ct.linkedin); setVal('ct-tw',  ct.twitter);
+  setVal('ct-loc',   ct.location);
+}
+function fillFooter(){
+  var ft = S.footer;
+  setVal('ft-logo', ft.logo); setVal('ft-copy', ft.copyright); setVal('ft-tag', ft.tagline);
+  renderFTL();
+}
+function fillSettings(){
+  setVal('cfg-tok',  TOKEN);
+  setVal('cfg-user', GH_USER);
+  setVal('cfg-repo', GH_REPO);
+  setVal('sp-logo',  S.splash.logo);
+  setVal('sp-tag',   S.splash.tagline);
+  // Show sync status
+  if(TOKEN && GH_USER && GH_REPO){
+    setSync('GitHub connected as <strong>'+GH_USER+'</strong> → repo <strong>'+GH_REPO+'</strong>. Click PUSH to sync all devices.','ok');
+  }else{
+    setSync('Not connected to GitHub — edits save to this device only. Fill in token, username, repo above → Save Config.','in');
+  }
+}
+
+// ── SAVE SECTIONS ─────────────────────────────────────────────
+$('save-hero').addEventListener('click', function(){
+  S.hero = {
+    firstName:   val('h-first')||'ALEX',
+    lastName:    val('h-last')||'NOVA',
+    subtitle:    val('h-sub'),
+    title:       val('h-title'),
+    tagline:     val('h-tag'),
+    availability:val('h-avail'),
+    glyph:       val('h-glyph')||'⬡',
+    avatarUrl:   S.hero.avatarUrl||'',
+    stats:{projects:val('st-pj')||0, clients:val('st-cl')||0,
+           yearsExp:val('st-yr')||0, commits:val('st-km')||0}
+  };
+  // If URL typed manually
+  var url = val('h-avurl');
+  if(url && url.startsWith('http')) S.hero.avatarUrl = url;
+  save(); showSaved('hero-ok'); toast('Hero saved','ok');
+  autoSync();
+});
+
+$('save-about').addEventListener('click', function(){
+  S.about.heading = val('ab-head')||'ABOUT';
+  S.about.bio     = val('ab-bio');
+  S.about.passion = val('ab-pass');
+  S.about.focus   = val('ab-foc');
+  save(); showSaved('about-ok'); toast('About saved','ok');
+  autoSync();
+});
+
+$('save-contact').addEventListener('click', function(){
+  S.contact = {intro:val('ct-intro'), email:val('ct-email'), phone:val('ct-phone'),
+               github:val('ct-gh'), linkedin:val('ct-li'), twitter:val('ct-tw'),
+               location:val('ct-loc')};
+  save(); showSaved('contact-ok'); toast('Contact saved','ok');
+  autoSync();
+});
+
+$('save-footer').addEventListener('click', function(){
+  S.footer.logo      = val('ft-logo');
+  S.footer.copyright = val('ft-copy');
+  S.footer.tagline   = val('ft-tag');
+  save(); showSaved('footer-ok'); toast('Footer saved','ok');
+  autoSync();
+});
+
+$('save-splash').addEventListener('click', function(){
+  S.splash = {logo:val('sp-logo')||'NOVA', tagline:val('sp-tag')};
+  save(); showSaved('splash-ok'); toast('Splash saved','ok');
+  autoSync();
+});
+
+// ── AVATAR UPLOAD ─────────────────────────────────────────────
+$('av-box').addEventListener('click', function(){ $('av-file').click(); });
+$('av-file').addEventListener('change', function(e){
+  var file = e.target.files[0]; if(!file) return;
+  var reader = new FileReader();
+  reader.onload = function(ev){
+    S.hero.avatarUrl = ev.target.result;
+    $('av-box').innerHTML = '<img src="'+ev.target.result+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%"/>';
+    save(); toast('Photo uploaded','ok'); autoSync();
+  };
+  reader.readAsDataURL(file);
+});
+
+// ── HIGHLIGHTS ────────────────────────────────────────────────
+function renderHLs(){
+  var list = $('ab-hls-list'); if(!list) return;
+  if(!S.about.highlights) S.about.highlights = [];
+  list.innerHTML = S.about.highlights.map(function(h){
+    return '<div class="card">'+
+      '<div class="card-info"><div class="card-name">'+h.label+'</div><div class="card-sub">'+h.value+'</div></div>'+
+      '<div class="card-actions"><button class="icon-btn del" data-id="'+h.id+'">✕</button></div>'+
+    '</div>';
+  }).join('');
+  list.querySelectorAll('.del').forEach(function(b){
+    b.addEventListener('click', function(){
+      S.about.highlights = S.about.highlights.filter(function(x){ return x.id !== b.dataset.id; });
+      renderHLs(); save(); autoSync();
+    });
+  });
+}
+$('add-hl').addEventListener('click', function(){
+  var lbl=val('hl-lbl'), v=val('hl-val');
+  if(!lbl||!v){toast('Fill both fields','er');return;}
+  if(!S.about.highlights)S.about.highlights=[];
+  S.about.highlights.push({id:uid(),label:lbl,value:v});
+  $('hl-lbl').value=''; $('hl-val').value='';
+  renderHLs(); save(); toast('Highlight added','ok'); autoSync();
+});
+
+// ── MARQUEE ───────────────────────────────────────────────────
+function renderMQ(){
+  var list = $('mq-list'); if(!list) return;
+  list.innerHTML = S.marqueeItems.map(function(kw){
+    return '<div class="card">'+
+      '<div class="card-info"><div class="card-name">'+kw+'</div></div>'+
+      '<div class="card-actions"><button class="icon-btn del" data-kw="'+kw+'">✕</button></div>'+
+    '</div>';
+  }).join('');
+  list.querySelectorAll('.del').forEach(function(b){
+    b.addEventListener('click', function(){
+      S.marqueeItems = S.marqueeItems.filter(function(k){ return k !== b.dataset.kw; });
+      renderMQ(); save(); autoSync();
+    });
+  });
+}
+$('add-mq').addEventListener('click', function(){
+  var kw = val('mq-kw').toUpperCase(); if(!kw){toast('Enter keyword','er');return;}
+  S.marqueeItems.push(kw); $('mq-kw').value='';
+  renderMQ(); save(); toast('Keyword added','ok'); autoSync();
+});
+
+// ── SKILLS ────────────────────────────────────────────────────
+function renderSkills(){
+  var list = $('sk-list'); if(!list) return;
+  list.innerHTML = S.skills.map(function(s){
+    return '<div class="card">'+
+      '<div style="width:10px;height:10px;border-radius:50%;background:'+s.color+';flex-shrink:0"></div>'+
+      '<div class="card-info">'+
+        '<div class="card-name">'+s.name+'</div>'+
+        '<div class="card-sub">'+s.category+' · '+s.level+'%</div>'+
+      '</div>'+
+      '<div class="card-actions"><button class="icon-btn del" data-id="'+s.id+'">✕</button></div>'+
+    '</div>';
+  }).join('');
+  list.querySelectorAll('.del').forEach(function(b){
+    b.addEventListener('click', function(){
+      S.skills = S.skills.filter(function(x){ return x.id !== b.dataset.id; });
+      renderSkills(); save(); autoSync();
+    });
+  });
+}
+$('add-skill').addEventListener('click', function(){
+  var nm=val('sk-name'),cat=val('sk-cat'),lv=parseInt(val('sk-lv'))||80,col=val('sk-col')||'#00deb4';
+  if(!nm){toast('Enter skill name','er');return;}
+  S.skills.push({id:uid(),name:nm,category:cat||'General',level:lv,color:col});
+  $('sk-name').value=''; $('sk-cat').value=''; $('sk-lv').value='';
+  renderSkills(); save(); toast('"'+nm+'" added','ok'); autoSync();
+});
+
+// ── PROJECTS ──────────────────────────────────────────────────
+function renderProjects(){
+  var list = $('pj-list'); if(!list) return;
+  list.innerHTML = S.projects.map(function(p){
+    return '<div class="card">'+
+      '<div style="width:10px;height:10px;border-radius:50%;background:'+p.color+';flex-shrink:0"></div>'+
+      '<div class="card-info">'+
+        '<div class="card-name">'+p.title+'</div>'+
+        '<div class="card-sub">'+p.category+' · '+p.status+'</div>'+
+      '</div>'+
+      '<div class="card-actions"><button class="icon-btn del" data-id="'+p.id+'">✕</button></div>'+
+    '</div>';
+  }).join('');
+  list.querySelectorAll('.del').forEach(function(b){
+    b.addEventListener('click', function(){
+      S.projects = S.projects.filter(function(x){ return x.id !== b.dataset.id; });
+      renderProjects(); save(); autoSync();
+    });
+  });
+}
+$('add-proj').addEventListener('click', function(){
+  var nm=val('pj-name');
+  if(!nm){toast('Enter project title','er');return;}
+  var techRaw = val('pj-tech');
+  var tech = techRaw ? techRaw.split(',').map(function(t){return t.trim();}).filter(Boolean) : [];
+  S.projects.push({id:uid(),title:nm,subtitle:val('pj-sub'),description:val('pj-desc'),
+    tech:tech,category:val('pj-cat')||'Project',status:val('pj-stat')||'LIVE',
+    color:val('pj-col')||'#00deb4',liveUrl:val('pj-live'),githubUrl:val('pj-gh')});
+  ['pj-name','pj-sub','pj-desc','pj-cat','pj-stat','pj-tech','pj-live','pj-gh'].forEach(function(id){ $(id)&&($(id).value=''); });
+  renderProjects(); save(); toast('"'+nm+'" added','ok'); autoSync();
+});
+
+// ── EXPERIENCE ────────────────────────────────────────────────
+function renderExp(){
+  var list = $('ex-list'); if(!list) return;
+  list.innerHTML = S.experience.map(function(e){
+    return '<div class="card">'+
+      '<div class="card-info">'+
+        '<div class="card-name">'+e.role+' @ '+e.company+'</div>'+
+        '<div class="card-sub">'+e.period+'</div>'+
+      '</div>'+
+      '<div class="card-actions"><button class="icon-btn del" data-id="'+e.id+'">✕</button></div>'+
+    '</div>';
+  }).join('');
+  list.querySelectorAll('.del').forEach(function(b){
+    b.addEventListener('click', function(){
+      S.experience = S.experience.filter(function(x){ return x.id !== b.dataset.id; });
+      renderExp(); save(); autoSync();
+    });
+  });
+}
+$('add-exp').addEventListener('click', function(){
+  var co=val('ex-company');
+  if(!co){toast('Enter company name','er');return;}
+  S.experience.push({id:uid(),company:co,role:val('ex-role'),period:val('ex-period'),
+    description:val('ex-desc'),highlight:val('ex-hl')});
+  ['ex-company','ex-role','ex-period','ex-desc','ex-hl'].forEach(function(id){ $(id)&&($(id).value=''); });
+  renderExp(); save(); toast('Experience added','ok'); autoSync();
+});
+
+// ── CERTIFICATIONS ────────────────────────────────────────────
+function renderCerts(){
+  var list = $('ce-list'); if(!list) return;
+  list.innerHTML = S.certifications.map(function(c){
+    return '<div class="card">'+
+      '<div style="width:10px;height:10px;border-radius:50%;background:'+c.color+';flex-shrink:0"></div>'+
+      '<div class="card-info">'+
+        '<div class="card-name">'+c.title+'</div>'+
+        '<div class="card-sub">'+c.issuer+' · '+c.date+'</div>'+
+      '</div>'+
+      '<div class="card-actions"><button class="icon-btn del" data-id="'+c.id+'">✕</button></div>'+
+    '</div>';
+  }).join('');
+  list.querySelectorAll('.del').forEach(function(b){
+    b.addEventListener('click', function(){
+      S.certifications = S.certifications.filter(function(x){ return x.id !== b.dataset.id; });
+      renderCerts(); save(); autoSync();
+    });
+  });
+}
+$('add-cert').addEventListener('click', function(){
+  var nm=val('ce-title');
+  if(!nm){toast('Enter cert title','er');return;}
+  S.certifications.push({id:uid(),title:nm,issuer:val('ce-issuer'),date:val('ce-date'),
+    category:val('ce-cat'),color:val('ce-col')||'#f0b429',image:val('ce-img')});
+  ['ce-title','ce-issuer','ce-date','ce-cat','ce-img'].forEach(function(id){ $(id)&&($(id).value=''); });
+  renderCerts(); save(); toast('"'+nm+'" added','ok'); autoSync();
+});
+
+// ── FOOTER LINKS ──────────────────────────────────────────────
+function renderFTL(){
+  var list = $('ftl-list'); if(!list) return;
+  if(!S.footer.links) S.footer.links=[];
+  list.innerHTML = S.footer.links.map(function(l){
+    return '<div class="card">'+
+      '<div class="card-info"><div class="card-name">'+l.label+'</div><div class="card-sub">'+l.url+'</div></div>'+
+      '<div class="card-actions"><button class="icon-btn del" data-id="'+l.id+'">✕</button></div>'+
+    '</div>';
+  }).join('');
+  list.querySelectorAll('.del').forEach(function(b){
+    b.addEventListener('click', function(){
+      S.footer.links = S.footer.links.filter(function(x){ return x.id !== b.dataset.id; });
+      renderFTL(); save(); autoSync();
+    });
+  });
+}
+$('add-ftl').addEventListener('click', function(){
+  var lbl=val('ftl-lbl'),url=val('ftl-url');
+  if(!lbl||!url){toast('Fill both fields','er');return;}
+  if(!S.footer.links)S.footer.links=[];
+  S.footer.links.push({id:uid(),label:lbl,url:url});
+  $('ftl-lbl').value=''; $('ftl-url').value='';
+  renderFTL(); save(); toast('Link added','ok'); autoSync();
+});
+
+// ── GITHUB CONNECTION ─────────────────────────────────────────
+function loadGHConfig(){
+  TOKEN   = localStorage.getItem('GH_TOKEN')||'';
+  GH_USER = localStorage.getItem('GH_USER') ||'';
+  GH_REPO = localStorage.getItem('GH_REPO') ||'';
+}
+function saveGHConfig(){
+  localStorage.setItem('GH_TOKEN', TOKEN);
+  localStorage.setItem('GH_USER',  GH_USER);
+  localStorage.setItem('GH_REPO',  GH_REPO);
+}
+function setGHStatus(connected){
+  var dot = $('gh-dot'), txt = $('gh-txt');
+  if(connected){
+    dot.style.background = 'var(--grn)';
+    txt.textContent = '✓ '+GH_USER+'/'+GH_REPO;
+    txt.style.color = 'var(--grn)';
+  }else{
+    dot.style.background = 'var(--mt)';
+    txt.textContent = 'NOT CONNECTED';
+    txt.style.color = 'var(--mt)';
+  }
+}
+
+// ── PUSH to GitHub ────────────────────────────────────────────
+async function pushToGitHub(){
+  if(!TOKEN||!GH_USER||!GH_REPO){
+    toast('Go to Settings → fill in GitHub token, username, repo → Save Config','er',5000);
+    return false;
+  }
+  var btn = $('tb-push');
+  if(btn){ btn.textContent='PUSHING…'; btn.disabled=true; }
+  setGHStatus(true);
+
+  // Build clean data (strip base64 images to avoid file size issues)
+  function strip(arr){
+    return (arr||[]).map(function(x){
+      var c=Object.assign({},x);
+      if(c.image&&c.image.startsWith('data:'))c.image='';
+      return c;
+    });
+  }
+  var heroClean = Object.assign({},S.hero);
+  if(heroClean.avatarUrl&&heroClean.avatarUrl.startsWith('data:'))heroClean.avatarUrl='';
+
+  var payload = {
+    _ts: Date.now(),   // timestamp — portfolio uses this to pick fresher data
+    splash:S.splash, hero:heroClean, about:S.about, marqueeItems:S.marqueeItems,
+    skills:S.skills, projects:S.projects, experience:S.experience,
+    certifications:strip(S.certifications), contact:S.contact, footer:S.footer
+  };
+  var json = JSON.stringify(payload, null, 2);
+  var b64  = btoa(unescape(encodeURIComponent(json)));
+
+  var ok = false;
+  try{
+    // Get existing SHA so we can update (not create) the file
+    var existR = await fetch(
+      'https://api.github.com/repos/'+GH_USER+'/'+GH_REPO+'/contents/data.json',
+      {headers:{Authorization:'token '+TOKEN, Accept:'application/vnd.github.v3+json'}}
+    );
+    var sha = null;
+    if(existR.ok){ var ef=await existR.json(); sha=ef.sha||null; }
+
+    // Try main branch, then master
+    var branches = ['main','master'];
+    for(var i=0; i<branches.length && !ok; i++){
+      var body = {message:'Update portfolio data', content:b64, branch:branches[i]};
+      if(sha) body.sha = sha;
+      var pr = await fetch(
+        'https://api.github.com/repos/'+GH_USER+'/'+GH_REPO+'/contents/data.json',
+        {method:'PUT',
+         headers:{Authorization:'token '+TOKEN,'Content-Type':'application/json',Accept:'application/vnd.github.v3+json'},
+         body:JSON.stringify(body)}
+      );
+      if(pr.ok){
+        ok = true;
+        toast('✓ Pushed to GitHub! All devices will see changes on refresh.','ok',5000);
+        setSync('✓ Pushed at '+new Date().toLocaleTimeString()+'. Open portfolio.html on any device and refresh — it will show your latest edits.','ok');
+      }else{
+        var ej = await pr.json();
+        // SHA conflict → get fresh SHA and retry
+        if(ej.message && ej.message.indexOf('409')!==-1){
+          var r2 = await fetch(
+            'https://api.github.com/repos/'+GH_USER+'/'+GH_REPO+'/contents/data.json',
+            {headers:{Authorization:'token '+TOKEN,Accept:'application/vnd.github.v3+json'}}
+          );
+          if(r2.ok){ var f2=await r2.json(); body.sha=f2.sha;
+            var pr2=await fetch(
+              'https://api.github.com/repos/'+GH_USER+'/'+GH_REPO+'/contents/data.json',
+              {method:'PUT',headers:{Authorization:'token '+TOKEN,'Content-Type':'application/json',Accept:'application/vnd.github.v3+json'},body:JSON.stringify(body)}
+            );
+            if(pr2.ok){ ok=true; toast('✓ Pushed! All devices will see changes on refresh.','ok',5000); }
+          }
+        }
+      }
+    }
+  }catch(e){ toast('Push failed: '+e.message,'er',5000); }
+
+  if(btn){ btn.textContent='⬆ PUSH'; btn.disabled=false; }
+  return ok;
+}
+
+// ── PULL from GitHub ──────────────────────────────────────────
+async function pullFromGitHub(){
+  if(!TOKEN||!GH_USER||!GH_REPO){
+    toast('Configure GitHub in Settings first','er',5000); return;
+  }
+  toast('Pulling from GitHub…','in');
+  var urls = [
+    'https://raw.githubusercontent.com/'+GH_USER+'/'+GH_REPO+'/main/data.json',
+    'https://raw.githubusercontent.com/'+GH_USER+'/'+GH_REPO+'/master/data.json'
+  ];
+  for(var i=0;i<urls.length;i++){
+    try{
+      var r = await fetch(urls[i]+'?t='+Date.now(),{cache:'no-store'});
+      if(!r.ok) continue;
+      var d = await r.json();
+      ['splash','hero','about','marqueeItems','skills','projects',
+       'experience','certifications','contact','footer'].forEach(function(k){
+        if(d[k]!=null) S[k]=d[k];
+      });
+      // Re-add IDs
+      ['skills','projects','experience','certifications'].forEach(function(k){
+        if(Array.isArray(S[k])) S[k]=S[k].map(function(x){return x.id?x:Object.assign({id:uid()},x);});
+      });
+      save();
+      renderSkills(); renderProjects(); renderExp(); renderCerts();
+      // Reload current form
+      if(currentPanel==='hero')    fillHero();
+      if(currentPanel==='about')   fillAbout();
+      if(currentPanel==='contact') fillContact();
+      if(currentPanel==='footer')  fillFooter();
+      toast('✓ Pulled from GitHub — data updated!','ok',5000);
+      return;
+    }catch(e){}
+  }
+  toast('Pull failed — check your config','er',5000);
+}
+
+// Auto-sync: push to GitHub after every save (debounced)
+var _autoTimer = null;
+function autoSync(){
+  if(!TOKEN||!GH_USER||!GH_REPO) return;
+  clearTimeout(_autoTimer);
+  _autoTimer = setTimeout(function(){ pushToGitHub(); }, 1500);
+}
+
+// ── SETTINGS EVENTS ───────────────────────────────────────────
+$('cfg-save').addEventListener('click', function(){
+  TOKEN   = val('cfg-tok');
+  GH_USER = val('cfg-user');
+  GH_REPO = val('cfg-repo');
+  saveGHConfig();
+  setGHStatus(!!(TOKEN&&GH_USER&&GH_REPO));
+  fillSettings();
+  toast('Config saved ✓','ok');
+});
+$('cfg-push').addEventListener('click', pushToGitHub);
+$('cfg-pull').addEventListener('click', pullFromGitHub);
+$('tb-push').addEventListener('click', pushToGitHub);
+
+// Export JSON
+$('exp-btn').addEventListener('click', function(){
+  var blob = new Blob([JSON.stringify(S,null,2)],{type:'application/json'});
+  var a = document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='portfolio-data.json'; a.click();
+  toast('Exported!','ok');
+});
+
+// Import JSON
+$('imp-btn').addEventListener('click', function(){ $('imp-file').click(); });
+$('imp-file').addEventListener('change', function(e){
+  var file = e.target.files[0]; if(!file) return;
+  var reader = new FileReader();
+  reader.onload = function(ev){
+    try{
+      var d = JSON.parse(ev.target.result);
+      ['splash','hero','about','marqueeItems','skills','projects',
+       'experience','certifications','contact','footer'].forEach(function(k){
+        if(d[k]!=null) S[k]=d[k];
+      });
+      save(); renderSkills(); renderProjects(); renderExp(); renderCerts();
+      if(currentPanel==='hero') fillHero();
+      if(currentPanel==='about') fillAbout();
+      toast('Imported successfully!','ok');
+      autoSync();
+    }catch(ex){ toast('Invalid JSON file','er'); }
+  };
+  reader.readAsText(file);
+});
+
+// Reset
+$('reset-btn').addEventListener('click', function(){
+  if(!confirm('This will delete ALL your portfolio data. Are you sure?')) return;
+  localStorage.removeItem(DATA_KEY);
+  sessionStorage.removeItem('ADMIN_OK');
+  location.reload();
+});
+
+// Change password
+$('chpw-btn').addEventListener('click', async function(){
+  var old = prompt('Current password:'); if(!old) return;
+  if(await sha256(old) !== localStorage.getItem('ADMIN_PW')){
+    toast('Wrong password','er'); return;
+  }
+  var np = prompt('New password (min 6 chars):');
+  if(!np||np.length<6){toast('Too short','er');return;}
+  if(prompt('Confirm new password:')!==np){toast('Passwords do not match','er');return;}
+  localStorage.setItem('ADMIN_PW', await sha256(np));
+  sessionStorage.removeItem('ADMIN_OK');
+  toast('Password changed — logging out…','ok');
+  setTimeout(function(){ location.reload(); }, 1500);
+});
+
+// GitHub modal
+$('m-connect').addEventListener('click', async function(){
+  var tok=val('m-tok'), user=val('m-user'), repo=val('m-repo');
+  if(!tok){toast('Token required','er');return;}
+  TOKEN=tok; GH_USER=user; GH_REPO=repo;
+  saveGHConfig();
+  $('gh-modal').classList.add('hide');
+  setGHStatus(!!(TOKEN&&GH_USER&&GH_REPO));
+  toast('Connecting…','in');
+  await pullFromGitHub();
+  fillSettings();
+});
+$('m-skip').addEventListener('click', function(){
+  localStorage.setItem('GH_SKIP','1');
+  $('gh-modal').classList.add('hide');
+  toast('Running in local-only mode','in');
+});
+
+// ── BOOT ──────────────────────────────────────────────────────
+function boot(){
+  loadGHConfig();
+  load();   // load from PF_DATA localStorage
+  // Render all lists
+  renderSkills(); renderProjects(); renderExp(); renderCerts();
+  // Fill the default panel (hero)
+  fillHero();
+  // GitHub status
+  setGHStatus(!!(TOKEN&&GH_USER&&GH_REPO));
+  // Show GitHub modal if not configured and not skipped
+  if(!TOKEN && !localStorage.getItem('GH_SKIP')){
+    setTimeout(function(){ $('gh-modal').classList.remove('hide'); }, 400);
+  }
+  // Set sync status
+  if(TOKEN&&GH_USER&&GH_REPO){
+    setSync('GitHub connected. Every Save auto-pushes to GitHub so all devices stay in sync.','ok');
+    // Auto-pull on open so this device always has latest data
+    pullFromGitHub();
+  }else{
+    setSync('Not connected to GitHub. Edits save to this device only. Go to Settings to connect GitHub for cross-device sync.','in');
+  }
+}
+</script>
+</body>
+</html>
