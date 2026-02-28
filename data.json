@@ -1,0 +1,203 @@
+{
+  "splash": {
+    "logo": "NOVA",
+    "tagline": "Booting Neural Interface",
+    "bg": "#04060f"
+  },
+  "hero": {
+    "firstName": "ALEX",
+    "lastName": "NOVA",
+    "subtitle": "// FULL-STACK · AI · CREATIVE TECH",
+    "title": "Architect of Digital Futures",
+    "tagline": "I build systems that think, interfaces that breathe, and code that matters.",
+    "avatarUrl": "",
+    "availability": "OPEN TO WORK",
+    "stats": {
+      "projects": 48,
+      "clients": 27,
+      "yearsExp": 9,
+      "commits": 12847
+    }
+  },
+  "about": {
+    "heading": "ABOUT ME",
+    "bio": "A full-stack engineer obsessed with the intersection of performance and aesthetics. I believe great software should feel inevitable — like it could not have been built any other way.",
+    "passion": "Building the impossible",
+    "focus": "Performance + Aesthetics",
+    "highlights": [
+      { "label": "Based In",    "value": "Neo Tokyo"   },
+      { "label": "Experience",  "value": "9 Years"     },
+      { "label": "Speciality",  "value": "Full-Stack"  },
+      { "label": "Status",      "value": "Available"   }
+    ]
+  },
+  "marqueeItems": [
+    "TYPESCRIPT", "RUST", "PYTHON", "REACT", "NODE.JS",
+    "WEBGL", "AI/ML", "KUBERNETES", "SOLIDITY", "THREE.JS",
+    "POSTGRESQL", "REDIS"
+  ],
+  "skills": [
+    { "name": "TypeScript",  "level": 95, "category": "Language", "color": "#3178c6" },
+    { "name": "Rust",        "level": 82, "category": "Language", "color": "#f74c00" },
+    { "name": "Python",      "level": 90, "category": "Language", "color": "#ffd43b" },
+    { "name": "React",       "level": 97, "category": "Frontend", "color": "#61dafb" },
+    { "name": "Node.js",     "level": 93, "category": "Backend",  "color": "#68a063" },
+    { "name": "GraphQL",     "level": 88, "category": "Backend",  "color": "#e535ab" },
+    { "name": "WebGL",       "level": 70, "category": "Graphics", "color": "#ff6b6b" },
+    { "name": "Kubernetes",  "level": 75, "category": "DevOps",   "color": "#326ce5" },
+    { "name": "TensorFlow",  "level": 72, "category": "AI/ML",    "color": "#ff6f00" },
+    { "name": "Solidity",    "level": 68, "category": "Web3",     "color": "#a391f4" }
+  ],
+  "projects": [
+    {
+      "id": "p1",
+      "title": "SYNAPSE AI",
+      "subtitle": "Neural interface platform",
+      "description": "Distributed AI inference platform processing 2M+ requests/day.",
+      "tech": ["Rust", "React", "WebGL", "Kafka"],
+      "category": "AI/ML",
+      "status": "LIVE",
+      "year": 2025,
+      "metrics": { "users": "50K+", "uptime": "99.97%", "latency": "12ms" },
+      "color": "#00f0c8",
+      "featured": true,
+      "liveUrl": "",
+      "githubUrl": ""
+    },
+    {
+      "id": "p2",
+      "title": "PHANTOM GRID",
+      "subtitle": "Decentralized compute mesh",
+      "description": "Peer-to-peer GPU compute network monetized via smart contracts.",
+      "tech": ["Solidity", "Rust", "TypeScript", "IPFS"],
+      "category": "Web3",
+      "status": "LIVE",
+      "year": 2024,
+      "metrics": { "nodes": "8.2K", "volume": "$4.2M", "tps": "847" },
+      "color": "#9d5cff",
+      "featured": true,
+      "liveUrl": "",
+      "githubUrl": ""
+    },
+    {
+      "id": "p3",
+      "title": "VOID RENDER",
+      "subtitle": "Browser ray-tracing engine",
+      "description": "WebGPU ray tracer with real-time global illumination at 60fps.",
+      "tech": ["WebGPU", "WGSL", "TypeScript"],
+      "category": "Graphics",
+      "status": "OPEN SOURCE",
+      "year": 2025,
+      "metrics": { "stars": "12.4K", "forks": "891", "perf": "60fps" },
+      "color": "#ff4d6d",
+      "featured": true,
+      "liveUrl": "",
+      "githubUrl": ""
+    },
+    {
+      "id": "p4",
+      "title": "ECHO PROTOCOL",
+      "subtitle": "Zero-latency comms layer",
+      "description": "Custom UDP protocol reducing p99 latency 76% vs WebSockets.",
+      "tech": ["Rust", "WASM", "Node.js"],
+      "category": "Systems",
+      "status": "LIVE",
+      "year": 2024,
+      "metrics": { "latency": "4ms p99", "scale": "100K", "adoption": "Global" },
+      "color": "#f0b429",
+      "featured": false,
+      "liveUrl": "",
+      "githubUrl": ""
+    }
+  ],
+  "experience": [
+    {
+      "id": "e1",
+      "company": "ANTHROPIC",
+      "role": "Principal Engineer – AI Infra",
+      "period": "2023 – Present",
+      "description": "Leading engineers building next-gen AI inference infrastructure.",
+      "highlight": "Architecture serving 500M+ AI requests/day"
+    },
+    {
+      "id": "e2",
+      "company": "PHANTOM LABS",
+      "role": "Senior Full-Stack Engineer",
+      "period": "2020 – 2023",
+      "description": "Built the core platform from 0 to 2M users.",
+      "highlight": "Scaled from 0 to $45M ARR in 24 months"
+    },
+    {
+      "id": "e3",
+      "company": "DEEP SYSTEMS",
+      "role": "Software Engineer",
+      "period": "2017 – 2020",
+      "description": "Distributed systems for financial data processing 1B+ events/day.",
+      "highlight": "Reduced pipeline latency from 2s to 40ms"
+    }
+  ],
+  "certifications": [
+    {
+      "id": "c1",
+      "title": "AWS Solutions Architect",
+      "issuer": "Amazon Web Services",
+      "date": "2024",
+      "credentialId": "AWS-SAA-2024",
+      "color": "#f0b429",
+      "category": "Cloud",
+      "badgeType": "aws",
+      "image": ""
+    },
+    {
+      "id": "c2",
+      "title": "Certified Kubernetes Administrator",
+      "issuer": "CNCF",
+      "date": "2023",
+      "credentialId": "CKA-2023",
+      "color": "#326ce5",
+      "category": "DevOps",
+      "badgeType": "k8s",
+      "image": ""
+    },
+    {
+      "id": "c3",
+      "title": "Google Cloud Professional",
+      "issuer": "Google Cloud",
+      "date": "2024",
+      "credentialId": "GCP-PRO-2024",
+      "color": "#00f0c8",
+      "category": "Cloud",
+      "badgeType": "gcp",
+      "image": ""
+    },
+    {
+      "id": "c4",
+      "title": "Rust Systems Programming",
+      "issuer": "Rust Foundation",
+      "date": "2023",
+      "credentialId": "RF-SYS-2023",
+      "color": "#f74c00",
+      "category": "Language",
+      "badgeType": "rust",
+      "image": ""
+    }
+  ],
+  "contact": {
+    "email": "hello@youremail.com",
+    "phone": "+1 (555) 000-0000",
+    "github": "github.com/yourusername",
+    "linkedin": "linkedin.com/in/yourusername",
+    "twitter": "@yourusername",
+    "location": "Your City, Country"
+  },
+  "footer": {
+    "logo": "YOUR/NAME",
+    "copyright": "© 2025 Your Name — All Rights Reserved",
+    "tagline": "PORTFOLIO v2.0",
+    "links": [
+      { "label": "GitHub",   "url": "#" },
+      { "label": "LinkedIn", "url": "#" },
+      { "label": "Twitter",  "url": "#" }
+    ]
+  }
+}

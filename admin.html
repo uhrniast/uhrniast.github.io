@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
+<title>Portfolio Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#030509;--bg2:#070f1c;--bg3:#0c1828;
+  --b:rgba(0,222,180,.12);--b2:rgba(0,222,180,.3);
+  --c:#00deb4;--mag:#ff0088;--amb:#f0b429;
+  --grn:#00e676;--red:#ff4d6d;
+  --tx:#c0d0e4;--mt:rgba(192,208,228,.4);
+  --fd:'Bebas Neue',sans-serif;--fm:'Space Mono',monospace;--fb:'DM Sans',sans-serif;
+  --nh:52px;--sw:220px;--bh:60px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--tx);font-family:var(--fb)}
+
+/* ── LOCK ── */
+#lock{position:fixed;inset:0;z-index:9000;background:var(--bg);display:flex;align-items:center;justify-content:center}
+#lock.gone{display:none}
+.lk-box{background:var(--bg2);border:1px solid var(--b);border-radius:16px;padding:40px;width:min(360px,90vw);text-align:center}
+.lk-icon{font-size:2.4rem;margin-bottom:12px}
+.lk-title{font-family:var(--fd);font-size:1.8rem;letter-spacing:5px;color:var(--c);margin-bottom:6px}
+.lk-hint{font-family:var(--fm);font-size:.58rem;letter-spacing:2px;color:var(--mt);margin-bottom:24px}
+.lk-row{position:relative;margin-bottom:14px}
+.lk-row input{width:100%;background:var(--bg3);border:1px solid var(--b);color:var(--tx);padding:13px 44px 13px 14px;border-radius:8px;font-family:var(--fm);font-size:.78rem;outline:none;letter-spacing:2px}
+.lk-row input:focus{border-color:var(--c)}
+.lk-eye{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--mt);cursor:pointer;font-size:.95rem}
+.lk-btn{width:100%;padding:13px;background:var(--c);color:#000;border:none;border-radius:8px;font-family:var(--fd);font-size:1rem;letter-spacing:4px;cursor:pointer}
+.lk-err{font-family:var(--fm);font-size:.58rem;color:var(--red);margin-top:8px;min-height:1.2em}
+.lk-note{font-family:var(--fm);font-size:.5rem;letter-spacing:1.5px;color:var(--mt);margin-top:14px}
+
+/* ── SHELL ── */
+#shell{height:100%;display:grid;grid-template-columns:var(--sw) 1fr;grid-template-rows:var(--nh) 1fr}
+@media(max-width:767px){#shell{grid-template-columns:1fr}}
+
+/* ── TOP BAR ── */
+#topbar{grid-column:1/-1;background:var(--bg2);border-bottom:1px solid var(--b);display:flex;align-items:center;padding:0 18px;gap:14px;z-index:50}
+.tb-logo{font-family:var(--fd);letter-spacing:6px;color:var(--c);font-size:1.15rem;margin-right:auto}
+@media(max-width:767px){.tb-logo{display:none}}
+.tb-ham{display:none;background:none;border:none;color:var(--c);font-size:1.3rem;cursor:pointer}
+@media(max-width:767px){.tb-ham{display:block}}
+/* Save status pill */
+.save-pill{display:flex;align-items:center;gap:8px;font-family:var(--fm);font-size:.55rem;letter-spacing:1.5px;background:var(--bg3);border:1px solid var(--b);border-radius:100px;padding:6px 14px;transition:all .3s}
+.save-pill.ok{border-color:rgba(0,230,118,.4);color:var(--grn)}
+.save-pill.pending{border-color:rgba(240,180,41,.4);color:var(--amb)}
+.sp-dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0}
+/* Download button */
+.tb-dl{background:var(--c);color:#000;border:none;border-radius:6px;font-family:var(--fd);font-size:.85rem;letter-spacing:3px;padding:8px 18px;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:6px}
+.tb-dl:hover{opacity:.9}
+
+/* ── SIDEBAR ── */
+#sidebar{background:var(--bg2);border-right:1px solid var(--b);overflow-y:auto;padding:12px 0;display:flex;flex-direction:column}
+@media(max-width:767px){#sidebar{display:none;position:fixed;inset:0;top:var(--nh);z-index:100;padding-bottom:80px}}
+#sidebar.open{display:flex}
+.sb-sec{font-family:var(--fm);font-size:.5rem;letter-spacing:3px;color:var(--mt);padding:14px 18px 5px}
+.sb-btn{display:flex;align-items:center;gap:10px;padding:10px 18px;font-family:var(--fm);font-size:.58rem;letter-spacing:2px;color:var(--mt);background:none;border:none;cursor:pointer;width:100%;text-align:left;transition:all .15s;border-left:2px solid transparent}
+.sb-btn:hover{color:var(--tx);background:rgba(0,222,180,.04)}
+.sb-btn.on{color:var(--c);background:rgba(0,222,180,.06);border-left-color:var(--c)}
+.sb-ico{font-size:1rem;width:20px;text-align:center}
+
+/* ── MAIN ── */
+#main{overflow-y:auto;background:var(--bg)}
+@media(max-width:767px){#main{padding-bottom:calc(var(--bh) + env(safe-area-inset-bottom,0px))}}
+
+/* ── PANELS ── */
+.panel{display:none;padding:24px}
+.panel.on{display:block}
+.pn-hd{margin-bottom:24px}
+.pn-title{font-family:var(--fd);font-size:1.6rem;letter-spacing:5px;color:var(--c)}
+.pn-sub{font-family:var(--fm);font-size:.58rem;letter-spacing:2px;color:var(--mt);margin-top:4px}
+
+/* ── FORMS ── */
+.field{margin-bottom:18px}
+.fl{font-family:var(--fm);font-size:.58rem;letter-spacing:2px;color:var(--mt);display:block;margin-bottom:5px}
+.fi{width:100%;background:var(--bg3);border:1px solid var(--b);color:var(--tx);padding:11px 14px;border-radius:7px;font-family:var(--fb);font-size:.88rem;outline:none;transition:border-color .2s}
+.fi:focus{border-color:var(--c)}
+.fi::placeholder{color:var(--mt)}
+textarea.fi{resize:vertical;min-height:90px}
+.fi-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:500px){.fi-row{grid-template-columns:1fr}}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:7px;padding:10px 20px;font-family:var(--fd);font-size:.9rem;letter-spacing:3px;border-radius:6px;cursor:pointer;border:none;transition:all .2s}
+.btn-p{background:var(--c);color:#000}.btn-p:hover{opacity:.9}
+.btn-s{background:var(--bg3);border:1px solid var(--b);color:var(--tx)}.btn-s:hover{border-color:var(--c);color:var(--c)}
+.btn-d{background:rgba(255,77,109,.08);border:1px solid rgba(255,77,109,.25);color:var(--red)}.btn-d:hover{background:rgba(255,77,109,.18)}
+.save-row{display:flex;align-items:center;gap:14px;margin-top:22px;flex-wrap:wrap}
+.ok-lbl{font-family:var(--fm);font-size:.58rem;letter-spacing:2px;color:var(--grn);opacity:0;transition:opacity .3s}
+.ok-lbl.show{opacity:1}
+.sep{height:1px;background:var(--b);margin:24px 0}
+
+/* ── CARD LISTS ── */
+.card-list{display:flex;flex-direction:column;gap:10px;margin-bottom:20px}
+.card{background:var(--bg2);border:1px solid var(--b);border-radius:9px;padding:14px 18px;display:flex;align-items:center;gap:12px}
+.card-info{flex:1;min-width:0}
+.card-name{font-weight:500;font-size:.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card-sub{font-family:var(--fm);font-size:.54rem;letter-spacing:1px;color:var(--mt);margin-top:2px}
+.del-btn{background:none;border:1px solid var(--b);border-radius:5px;color:var(--mt);width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;font-size:.85rem}
+.del-btn:hover{border-color:var(--red);color:var(--red)}
+.clr-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+
+/* ── ADD FORM ── */
+.add-form{background:var(--bg2);border:1px solid var(--b);border-radius:10px;padding:18px;margin-bottom:18px}
+.add-ttl{font-family:var(--fd);font-size:1rem;letter-spacing:3px;color:var(--c);margin-bottom:14px}
+
+/* ── TOAST ── */
+#toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);font-family:var(--fm);font-size:.62rem;letter-spacing:2px;padding:11px 22px;border-radius:7px;z-index:9999;opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap}
+@media(max-width:767px){#toast{bottom:calc(var(--bh) + env(safe-area-inset-bottom,0px) + 10px)}}
+#toast.ok{background:rgba(0,230,118,.15);border:1px solid rgba(0,230,118,.3);color:var(--grn)}
+#toast.er{background:rgba(255,77,109,.15);border:1px solid rgba(255,77,109,.3);color:var(--red)}
+#toast.in{background:rgba(0,222,180,.1);border:1px solid rgba(0,222,180,.2);color:var(--c)}
+#toast.show{opacity:1}
+
+/* ── MOBILE BOTTOM NAV ── */
+#botnav{display:none;position:fixed;bottom:0;left:0;right:0;z-index:99;background:var(--bg2);border-top:1px solid var(--b);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(max-width:767px){#botnav{display:flex}}
+.bn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:9px 4px;gap:3px;background:none;border:none;cursor:pointer;color:var(--mt);font-family:var(--fm);font-size:.42rem;letter-spacing:1px}
+.bn.on{color:var(--c)}
+.bn-ico{font-size:1.05rem}
+
+/* ── AVATAR ── */
+.av-box{width:90px;height:90px;border-radius:50%;border:2px solid var(--b);display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;font-size:1.8rem;color:var(--c);background:var(--bg3);transition:border-color .2s}
+.av-box:hover{border-color:var(--c)}
+.av-box img{width:100%;height:100%;object-fit:cover}
+
+/* ── HOW-TO BOX ── */
+.howto{background:rgba(0,222,180,.04);border:1px solid rgba(0,222,180,.15);border-radius:10px;padding:18px;margin-bottom:24px;font-family:var(--fm);font-size:.58rem;letter-spacing:1px;line-height:1.9;color:var(--mt)}
+.howto strong{color:var(--c)}
+</style>
+</head>
+<body>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- LOCK -->
+<div id="lock">
+  <div class="lk-box">
+    <div class="lk-icon">⬡</div>
+    <div class="lk-title" id="lk-title">ADMIN</div>
+    <div class="lk-hint" id="lk-hint">Enter your password</div>
+    <div class="lk-row">
+      <input type="password" id="lk-pw" placeholder="PASSWORD" autocomplete="current-password"/>
+      <button class="lk-eye" id="lk-eye">👁</button>
+    </div>
+    <button class="lk-btn" id="lk-btn">UNLOCK</button>
+    <div class="lk-err" id="lk-err"></div>
+    <div class="lk-note">SHA-256 hashed · stored in this browser only</div>
+  </div>
+</div>
+
+<!-- SHELL -->
+<div id="shell">
+
+  <!-- TOP BAR -->
+  <div id="topbar">
+    <button class="tb-ham" id="tb-ham">☰</button>
+    <div class="tb-logo">PORTFOLIO ADMIN</div>
+    <div class="save-pill" id="save-pill"><div class="sp-dot"></div><span id="save-txt">ALL SAVED</span></div>
+    <button class="tb-dl" id="tb-dl">⬇ SAVE data.json</button>
+  </div>
+
+  <!-- SIDEBAR -->
+  <div id="sidebar">
+    <div class="sb-sec">CONTENT</div>
+    <button class="sb-btn on" data-p="hero">  <span class="sb-ico">⬡</span> HERO</button>
+    <button class="sb-btn" data-p="about">    <span class="sb-ico">◎</span> ABOUT</button>
+    <button class="sb-btn" data-p="skills">   <span class="sb-ico">◈</span> SKILLS</button>
+    <button class="sb-btn" data-p="projects"> <span class="sb-ico">◇</span> PROJECTS</button>
+    <button class="sb-btn" data-p="exp">      <span class="sb-ico">◉</span> EXPERIENCE</button>
+    <button class="sb-btn" data-p="certs">    <span class="sb-ico">◆</span> CERTIFICATIONS</button>
+    <button class="sb-btn" data-p="contact">  <span class="sb-ico">✉</span> CONTACT</button>
+    <button class="sb-btn" data-p="footer">   <span class="sb-ico">▽</span> FOOTER + SPLASH</button>
+    <div class="sb-sec">SYSTEM</div>
+    <button class="sb-btn" data-p="data">     <span class="sb-ico">⚙</span> DATA</button>
+  </div>
+
+  <!-- MAIN -->
+  <div id="main">
+
+    <!-- HERO -->
+    <div class="panel on" id="p-hero">
+      <div class="pn-hd"><div class="pn-title">HERO</div><div class="pn-sub">YOUR MAIN SECTION · NAME, TAGLINE, STATS</div></div>
+      <div class="fi-row">
+        <div class="field"><label class="fl">FIRST NAME</label><input class="fi" id="h-first" placeholder="ALEX"/></div>
+        <div class="field"><label class="fl">LAST NAME</label><input class="fi" id="h-last" placeholder="NOVA"/></div>
+      </div>
+      <div class="field"><label class="fl">SUBTITLE (above name)</label><input class="fi" id="h-sub" placeholder="// FULL-STACK · AI · CREATIVE TECH"/></div>
+      <div class="field"><label class="fl">TITLE / ROLE</label><input class="fi" id="h-title" placeholder="Architect of Digital Futures"/></div>
+      <div class="field"><label class="fl">TAGLINE (1-2 sentences)</label><textarea class="fi" id="h-tag"></textarea></div>
+      <div class="field"><label class="fl">AVAILABILITY</label><input class="fi" id="h-avail" placeholder="OPEN TO WORK"/></div>
+      <div class="sep"></div>
+      <div style="font-family:var(--fd);font-size:1rem;letter-spacing:3px;color:var(--c);margin-bottom:14px">STATS</div>
+      <div class="fi-row">
+        <div class="field"><label class="fl">PROJECTS</label><input class="fi" id="st-pj" type="number" placeholder="48"/></div>
+        <div class="field"><label class="fl">CLIENTS</label><input class="fi" id="st-cl" type="number" placeholder="27"/></div>
+        <div class="field"><label class="fl">YEARS EXP</label><input class="fi" id="st-yr" type="number" placeholder="9"/></div>
+        <div class="field"><label class="fl">COMMITS</label><input class="fi" id="st-km" placeholder="12847"/></div>
+      </div>
+      <div class="sep"></div>
+      <div style="font-family:var(--fd);font-size:1rem;letter-spacing:3px;color:var(--c);margin-bottom:14px">AVATAR PHOTO</div>
+      <div class="field">
+        <div class="av-box" id="av-box" title="Click to upload">📷</div>
+        <input type="file" id="av-file" accept="image/*" style="display:none"/>
+        <div style="margin-top:8px;font-family:var(--fm);font-size:.54rem;color:var(--mt)">Or paste a URL:</div>
+        <input class="fi" id="h-avurl" placeholder="https://..." style="margin-top:6px"/>
+      </div>
+      <div class="field"><label class="fl">GLYPH (shown if no photo)</label><input class="fi" id="h-glyph" placeholder="⬡"/></div>
+      <div class="save-row">
+        <button class="btn btn-p" id="save-hero">SAVE HERO</button>
+        <div class="ok-lbl" id="hero-ok">✓ SAVED</div>
+      </div>
+    </div>
+
+    <!-- ABOUT -->
+    <div class="panel" id="p-about">
+      <div class="pn-hd"><div class="pn-title">ABOUT</div><div class="pn-sub">BIO, HIGHLIGHTS, MARQUEE KEYWORDS</div></div>
+      <div class="field"><label class="fl">SECTION HEADING</label><input class="fi" id="ab-head" placeholder="ABOUT ME"/></div>
+      <div class="field"><label class="fl">BIO</label><textarea class="fi" id="ab-bio" rows="4"></textarea></div>
+      <div class="fi-row">
+        <div class="field"><label class="fl">PASSION</label><input class="fi" id="ab-pass" placeholder="Building the impossible"/></div>
+        <div class="field"><label class="fl">FOCUS</label><input class="fi" id="ab-foc" placeholder="Performance + Aesthetics"/></div>
+      </div>
+      <div class="sep"></div>
+      <div style="font-family:var(--fd);font-size:1rem;letter-spacing:3px;color:var(--c);margin-bottom:14px">HIGHLIGHTS</div>
+      <div class="card-list" id="hl-list"></div>
+      <div class="add-form">
+        <div class="add-ttl">ADD HIGHLIGHT</div>
+        <div class="fi-row">
+          <div class="field"><label class="fl">LABEL</label><input class="fi" id="hl-lbl" placeholder="Based In"/></div>
+          <div class="field"><label class="fl">VALUE</label><input class="fi" id="hl-val" placeholder="Neo Tokyo"/></div>
+        </div>
+        <button class="btn btn-s" id="add-hl">+ ADD</button>
+      </div>
+      <div class="sep"></div>
+      <div style="font-family:var(--fd);font-size:1rem;letter-spacing:3px;color:var(--c);margin-bottom:14px">MARQUEE KEYWORDS</div>
+      <div class="card-list" id="mq-list"></div>
+      <div class="add-form">
+        <div class="fi-row">
+          <div class="field"><label class="fl">KEYWORD</label><input class="fi" id="mq-kw" placeholder="TYPESCRIPT"/></div>
+        </div>
+        <button class="btn btn-s" id="add-mq">+ ADD</button>
+      </div>
+      <div class="save-row">
+        <button class="btn btn-p" id="save-about">SAVE ABOUT</button>
+        <div class="ok-lbl" id="about-ok">✓ SAVED</div>
+      </div>
+    </div>
+
+    <!-- SKILLS -->
+    <div class="panel" id="p-skills">
+      <div class="pn-hd"><div class="pn-title">SKILLS</div><div class="pn-sub">TECHNICAL SKILLS WITH PROGRESS BARS</div></div>
+      <div class="card-list" id="sk-list"></div>
+      <div class="add-form">
+        <div class="add-ttl">ADD SKILL</div>
+        <div class="fi-row">
+          <div class="field"><label class="fl">NAME</label><input class="fi" id="sk-name" placeholder="TypeScript"/></div>
+          <div class="field"><label class="fl">CATEGORY</label><input class="fi" id="sk-cat" placeholder="Language"/></div>
+        </div>
+        <div class="fi-row">
+          <div class="field"><label class="fl">LEVEL (1–100)</label><input class="fi" id="sk-lv" type="number" min="1" max="100" placeholder="90"/></div>
+          <div class="field"><label class="fl">COLOR</label><input class="fi" id="sk-col" type="color" value="#00deb4" style="height:42px;padding:4px 8px"/></div>
+        </div>
+        <button class="btn btn-p" id="add-skill">+ ADD SKILL</button>
+      </div>
+    </div>
+
+    <!-- PROJECTS -->
+    <div class="panel" id="p-projects">
+      <div class="pn-hd"><div class="pn-title">PROJECTS</div><div class="pn-sub">YOUR PORTFOLIO PROJECTS</div></div>
+      <div class="card-list" id="pj-list"></div>
+      <div class="add-form">
+        <div class="add-ttl">ADD PROJECT</div>
+        <div class="fi-row">
+          <div class="field"><label class="fl">TITLE</label><input class="fi" id="pj-name" placeholder="SYNAPSE AI"/></div>
+          <div class="field"><label class="fl">SUBTITLE</label><input class="fi" id="pj-sub" placeholder="Neural interface platform"/></div>
+        </div>
+        <div class="field"><label class="fl">DESCRIPTION</label><textarea class="fi" id="pj-desc" rows="2"></textarea></div>
+        <div class="fi-row">
+          <div class="field"><label class="fl">CATEGORY</label><input class="fi" id="pj-cat" placeholder="AI/ML"/></div>
+          <div class="field"><label class="fl">STATUS</label><input class="fi" id="pj-stat" placeholder="LIVE"/></div>
+        </div>
+        <div class="fi-row">
+          <div class="field"><label class="fl">YEAR</label><input class="fi" id="pj-year" type="number" placeholder="2025"/></div>
+          <div class="field"><label class="fl">ACCENT COLOR</label><input class="fi" id="pj-col" type="color" value="#00deb4" style="height:42px;padding:4px 8px"/></div>
+        </div>
+        <div class="field"><label class="fl">TECH STACK (comma separated)</label><input class="fi" id="pj-tech" placeholder="React, Node.js, TypeScript"/></div>
+        <div class="fi-row">
+          <div class="field"><label class="fl">LIVE URL</label><input class="fi" id="pj-live" placeholder="https://..."/></div>
+          <div class="field"><label class="fl">GITHUB URL</label><input class="fi" id="pj-gh" placeholder="https://github.com/..."/></div>
+        </div>
+        <div class="field"><label class="fl">METRICS (comma separated, e.g. users:50K+, uptime:99.9%)</label><input class="fi" id="pj-met" placeholder="users:50K+, uptime:99.9%"/></div>
+        <div class="field" style="display:flex;align-items:center;gap:10px">
+          <input type="checkbox" id="pj-feat" style="width:16px;height:16px;accent-color:var(--c)"/>
+          <label class="fl" for="pj-feat" style="margin:0;cursor:pointer">FEATURED (shown in top row)</label>
+        </div>
+        <button class="btn btn-p" id="add-proj">+ ADD PROJECT</button>
+      </div>
+    </div>
+
+    <!-- EXPERIENCE -->
+    <div class="panel" id="p-exp">
+      <div class="pn-hd"><div class="pn-title">EXPERIENCE</div><div class="pn-sub">WORK HISTORY TIMELINE</div></div>
+      <div class="card-list" id="ex-list"></div>
+      <div class="add-form">
+        <div class="add-ttl">ADD EXPERIENCE</div>
+        <div class="fi-row">
+          <div class="field"><label class="fl">COMPANY</label><input class="fi" id="ex-co" placeholder="ANTHROPIC"/></div>
+          <div class="field"><label class="fl">ROLE</label><input class="fi" id="ex-role" placeholder="Principal Engineer"/></div>
+        </div>
+        <div class="field"><label class="fl">PERIOD</label><input class="fi" id="ex-per" placeholder="2023 – Present"/></div>
+        <div class="field"><label class="fl">DESCRIPTION</label><textarea class="fi" id="ex-desc" rows="2"></textarea></div>
+        <div class="field"><label class="fl">HIGHLIGHT / ACHIEVEMENT</label><input class="fi" id="ex-hl" placeholder="Architecture serving 500M+ requests/day"/></div>
+        <button class="btn btn-p" id="add-exp">+ ADD EXPERIENCE</button>
+      </div>
+    </div>
+
+    <!-- CERTIFICATIONS -->
+    <div class="panel" id="p-certs">
+      <div class="pn-hd"><div class="pn-title">CERTIFICATIONS</div><div class="pn-sub">CREDENTIALS AND CERTIFICATES</div></div>
+      <div class="card-list" id="ce-list"></div>
+      <div class="add-form">
+        <div class="add-ttl">ADD CERTIFICATION</div>
+        <div class="fi-row">
+          <div class="field"><label class="fl">TITLE</label><input class="fi" id="ce-title" placeholder="AWS Solutions Architect"/></div>
+          <div class="field"><label class="fl">ISSUER</label><input class="fi" id="ce-issuer" placeholder="Amazon Web Services"/></div>
+        </div>
+        <div class="fi-row">
+          <div class="field"><label class="fl">DATE</label><input class="fi" id="ce-date" placeholder="2024"/></div>
+          <div class="field"><label class="fl">CATEGORY</label><input class="fi" id="ce-cat" placeholder="Cloud"/></div>
+        </div>
+        <div class="fi-row">
+          <div class="field"><label class="fl">CREDENTIAL ID</label><input class="fi" id="ce-cid" placeholder="AWS-SAA-2024"/></div>
+          <div class="field"><label class="fl">ACCENT COLOR</label><input class="fi" id="ce-col" type="color" value="#f0b429" style="height:42px;padding:4px 8px"/></div>
+        </div>
+        <div class="field">
+          <label class="fl">BADGE TYPE</label>
+          <select class="fi" id="ce-badge">
+            <option value="def">Default</option>
+            <option value="aws">AWS</option>
+            <option value="k8s">Kubernetes / CKA</option>
+            <option value="gcp">Google Cloud</option>
+            <option value="rust">Rust</option>
+          </select>
+        </div>
+        <div class="field"><label class="fl">BADGE IMAGE URL (overrides badge type)</label><input class="fi" id="ce-img" placeholder="https://..."/></div>
+        <button class="btn btn-p" id="add-cert">+ ADD CERT</button>
+      </div>
+    </div>
+
+    <!-- CONTACT -->
+    <div class="panel" id="p-contact">
+      <div class="pn-hd"><div class="pn-title">CONTACT</div><div class="pn-sub">EMAIL, PHONE, SOCIAL LINKS</div></div>
+      <div class="fi-row">
+        <div class="field"><label class="fl">EMAIL</label><input class="fi" id="ct-email" type="email" placeholder="hello@email.com"/></div>
+        <div class="field"><label class="fl">PHONE</label><input class="fi" id="ct-phone" placeholder="+1 (555) 000-0000"/></div>
+      </div>
+      <div class="fi-row">
+        <div class="field"><label class="fl">GITHUB (no https://)</label><input class="fi" id="ct-gh" placeholder="github.com/username"/></div>
+        <div class="field"><label class="fl">LINKEDIN (no https://)</label><input class="fi" id="ct-li" placeholder="linkedin.com/in/username"/></div>
+      </div>
+      <div class="fi-row">
+        <div class="field"><label class="fl">TWITTER</label><input class="fi" id="ct-tw" placeholder="@username"/></div>
+        <div class="field"><label class="fl">LOCATION</label><input class="fi" id="ct-loc" placeholder="San Francisco, CA"/></div>
+      </div>
+      <div class="save-row">
+        <button class="btn btn-p" id="save-contact">SAVE CONTACT</button>
+        <div class="ok-lbl" id="contact-ok">✓ SAVED</div>
+      </div>
+    </div>
+
+    <!-- FOOTER + SPLASH -->
+    <div class="panel" id="p-footer">
+      <div class="pn-hd"><div class="pn-title">FOOTER + SPLASH</div><div class="pn-sub">FOOTER LINKS AND SPLASH SCREEN</div></div>
+      <div style="font-family:var(--fd);font-size:1rem;letter-spacing:3px;color:var(--c);margin-bottom:14px">FOOTER</div>
+      <div class="field"><label class="fl">LOGO TEXT</label><input class="fi" id="ft-logo" placeholder="ALEX/NOVA"/></div>
+      <div class="field"><label class="fl">COPYRIGHT</label><input class="fi" id="ft-copy" placeholder="© 2025 Alex Nova — All Rights Reserved"/></div>
+      <div class="field"><label class="fl">TAGLINE</label><input class="fi" id="ft-tag" placeholder="PORTFOLIO v2.0"/></div>
+      <div class="sep"></div>
+      <div style="font-family:var(--fd);font-size:1rem;letter-spacing:3px;color:var(--c);margin-bottom:14px">FOOTER LINKS</div>
+      <div class="card-list" id="ftl-list"></div>
+      <div class="add-form">
+        <div class="fi-row">
+          <div class="field"><label class="fl">LABEL</label><input class="fi" id="ftl-lbl" placeholder="GitHub"/></div>
+          <div class="field"><label class="fl">URL</label><input class="fi" id="ftl-url" placeholder="https://github.com/..."/></div>
+        </div>
+        <button class="btn btn-s" id="add-ftl">+ ADD LINK</button>
+      </div>
+      <div class="sep"></div>
+      <div style="font-family:var(--fd);font-size:1rem;letter-spacing:3px;color:var(--c);margin-bottom:14px">SPLASH SCREEN</div>
+      <div class="fi-row">
+        <div class="field"><label class="fl">LOGO TEXT</label><input class="fi" id="sp-logo" placeholder="NOVA"/></div>
+        <div class="field"><label class="fl">TAGLINE</label><input class="fi" id="sp-tag" placeholder="Booting Neural Interface"/></div>
+      </div>
+      <div class="save-row">
+        <button class="btn btn-p" id="save-footer">SAVE ALL</button>
+        <div class="ok-lbl" id="footer-ok">✓ SAVED</div>
+      </div>
+    </div>
+
+    <!-- DATA -->
+    <div class="panel" id="p-data">
+      <div class="pn-hd"><div class="pn-title">DATA</div><div class="pn-sub">IMPORT / EXPORT / RESET</div></div>
+      <div class="howto">
+        <strong>HOW IT WORKS (no token needed):</strong><br><br>
+        1. Edit your portfolio in any section above<br>
+        2. Click <strong>⬇ SAVE data.json</strong> in the top bar<br>
+        3. A file called <strong>data.json</strong> downloads to your computer<br>
+        4. Put it in the <strong>same folder</strong> as portfolio.html<br>
+        5. Open portfolio.html — it reads data.json automatically<br><br>
+        <strong>Same device, no server?</strong> Changes save to your browser automatically. Just open portfolio.html in the same browser.
+      </div>
+      <div class="save-row" style="margin-bottom:24px">
+        <button class="btn btn-p" id="dl-btn">⬇ SAVE data.json</button>
+        <button class="btn btn-s" id="imp-btn">⬆ IMPORT data.json</button>
+        <input type="file" id="imp-file" accept=".json" style="display:none"/>
+      </div>
+      <div class="sep"></div>
+      <div style="font-family:var(--fd);font-size:1rem;letter-spacing:3px;color:var(--red);margin-bottom:10px">DANGER ZONE</div>
+      <button class="btn btn-d" id="reset-btn">⚠ RESET ALL DATA</button>
+      <div style="font-family:var(--fm);font-size:.54rem;color:var(--mt);margin-top:8px">Clears all data and reloads. Cannot be undone.</div>
+      <div class="sep"></div>
+      <div style="font-family:var(--fd);font-size:1rem;letter-spacing:3px;color:var(--c);margin-bottom:10px">PASSWORD</div>
+      <button class="btn btn-s" id="chpw-btn">CHANGE PASSWORD</button>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /shell -->
+
+<!-- MOBILE BOTTOM NAV -->
+<div id="botnav">
+  <button class="bn on"  data-p="hero">     <span class="bn-ico">⬡</span>HERO</button>
+  <button class="bn"     data-p="skills">   <span class="bn-ico">◈</span>SKILLS</button>
+  <button class="bn"     data-p="projects"> <span class="bn-ico">◇</span>PROJ</button>
+  <button class="bn"     data-p="exp">      <span class="bn-ico">◉</span>EXP</button>
+  <button class="bn"     data-p="data">     <span class="bn-ico">⚙</span>DATA</button>
+</div>
+
+<script>
+// ════════════════════════════════════════════════════════
+// ADMIN — edits data, saves to localStorage AND data.json
+//
+// portfolio.html reads from:
+//   1. data.json (same folder) — best for multi-device
+//   2. localStorage            — same browser, instant
+//
+// WORKFLOW:
+//   Edit anything → auto-saved to browser (localStorage)
+//   Click "SAVE data.json" → download file → put it next
+//   to portfolio.html → portfolio reads it on next load
+// ════════════════════════════════════════════════════════
+
+var DATA_KEY = 'PF_DATA';  // same key portfolio reads
+
+// ── HELPERS ──────────────────────────────────────────────
+function $(id){ return document.getElementById(id); }
+function v(id){ var e=$(id); return e ? e.value.trim() : ''; }
+function sv(id, val){ var e=$(id); if(e) e.value = (val == null ? '' : val); }
+function uid(){ return Math.random().toString(36).slice(2,9); }
+
+var _toastT;
+function toast(msg, type, ms){
+  var t=$('toast'); t.textContent=msg; t.className='show '+(type||'in');
+  clearTimeout(_toastT); _toastT=setTimeout(function(){ t.className=''; }, ms||2800);
+}
+function showOk(id){ var e=$(id); if(!e)return; e.classList.add('show'); setTimeout(function(){ e.classList.remove('show'); },2200); }
+
+async function sha256(str){
+  var b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,'0');}).join('');
+}
+
+// ── STATE ─────────────────────────────────────────────────
+var S = {
+  splash:  { logo:'NOVA', tagline:'Booting Neural Interface', bg:'#04060f' },
+  hero:    { firstName:'ALEX', lastName:'NOVA',
+             subtitle:'// FULL-STACK · AI · CREATIVE TECH',
+             title:'Architect of Digital Futures',
+             tagline:'I build systems that think, interfaces that breathe, and code that matters.',
+             avatarUrl:'', glyph:'⬡', availability:'OPEN TO WORK',
+             stats:{ projects:48, clients:27, yearsExp:9, commits:12847 } },
+  about:   { heading:'ABOUT ME',
+             bio:'A full-stack engineer obsessed with the intersection of performance and aesthetics.',
+             passion:'Building the impossible', focus:'Performance + Aesthetics',
+             highlights:[
+               {id:uid(),label:'Based In',value:'Neo Tokyo'},
+               {id:uid(),label:'Experience',value:'9 Years'},
+               {id:uid(),label:'Speciality',value:'Full-Stack'},
+               {id:uid(),label:'Status',value:'Available'}
+             ] },
+  marqueeItems: ['TYPESCRIPT','RUST','PYTHON','REACT','NODE.JS','WEBGL','AI/ML','KUBERNETES','SOLIDITY','THREE.JS','POSTGRESQL','REDIS'],
+  skills: [
+    {id:uid(),name:'TypeScript',level:95,category:'Language',color:'#3178c6'},
+    {id:uid(),name:'Rust',      level:82,category:'Language',color:'#f74c00'},
+    {id:uid(),name:'Python',    level:90,category:'Language',color:'#ffd43b'},
+    {id:uid(),name:'React',     level:97,category:'Frontend',color:'#61dafb'},
+    {id:uid(),name:'Node.js',   level:93,category:'Backend', color:'#68a063'},
+    {id:uid(),name:'GraphQL',   level:88,category:'Backend', color:'#e535ab'},
+    {id:uid(),name:'WebGL',     level:70,category:'Graphics',color:'#ff6b6b'},
+    {id:uid(),name:'Kubernetes',level:75,category:'DevOps',  color:'#326ce5'}
+  ],
+  projects: [
+    {id:uid(),title:'SYNAPSE AI',subtitle:'Neural interface platform',
+     description:'Distributed AI inference platform processing 2M+ requests/day.',
+     tech:['Rust','React','WebGL','Kafka'],category:'AI/ML',status:'LIVE',year:2025,
+     metrics:{users:'50K+',uptime:'99.97%',latency:'12ms'},color:'#00f0c8',featured:true,liveUrl:'',githubUrl:''},
+    {id:uid(),title:'PHANTOM GRID',subtitle:'Decentralized compute mesh',
+     description:'Peer-to-peer GPU compute network monetized via smart contracts.',
+     tech:['Solidity','Rust','TypeScript'],category:'Web3',status:'LIVE',year:2024,
+     metrics:{nodes:'8.2K',volume:'$4.2M'},color:'#9d5cff',featured:true,liveUrl:'',githubUrl:''}
+  ],
+  experience: [
+    {id:uid(),company:'ANTHROPIC',role:'Principal Engineer – AI Infra',period:'2023 – Present',
+     description:'Leading engineers building next-gen AI inference infrastructure.',
+     highlight:'Architecture serving 500M+ AI requests/day'},
+    {id:uid(),company:'PHANTOM LABS',role:'Senior Full-Stack Engineer',period:'2020 – 2023',
+     description:'Built the core platform from 0 to 2M users.',
+     highlight:'Scaled from 0 to $45M ARR in 24 months'}
+  ],
+  certifications: [
+    {id:uid(),title:'AWS Solutions Architect',issuer:'Amazon Web Services',date:'2024',
+     credentialId:'AWS-SAA-2024',color:'#f0b429',category:'Cloud',badgeType:'aws',image:''},
+    {id:uid(),title:'Certified Kubernetes Administrator',issuer:'CNCF',date:'2023',
+     credentialId:'CKA-2023',color:'#326ce5',category:'DevOps',badgeType:'k8s',image:''}
+  ],
+  contact: {
+    email:'hello@youremail.com', phone:'+1 (555) 000-0000',
+    github:'github.com/yourusername', linkedin:'linkedin.com/in/yourusername',
+    twitter:'@yourusername', location:'Your City, Country'
+  },
+  footer: {
+    logo:'YOUR/NAME', copyright:'© 2025 Your Name — All Rights Reserved',
+    tagline:'PORTFOLIO v2.0',
+    links:[{id:uid(),label:'GitHub',url:'#'},{id:uid(),label:'LinkedIn',url:'#'},{id:uid(),label:'Twitter',url:'#'}]
+  }
+};
+
+// ── SAVE / LOAD ────────────────────────────────────────────
+var _unsaved = false;
+
+function markUnsaved(){
+  _unsaved = true;
+  var pill=$('save-pill'), txt=$('save-txt');
+  if(pill){ pill.className='save-pill pending'; txt.textContent='UNSAVED CHANGES'; }
+}
+function markSaved(){
+  _unsaved = false;
+  var pill=$('save-pill'), txt=$('save-txt');
+  if(pill){ pill.className='save-pill ok'; txt.textContent='ALL SAVED'; }
+}
+
+function saveLocal(){
+  // Save to localStorage — portfolio reads this on same browser/device
+  try{ localStorage.setItem(DATA_KEY, JSON.stringify(S)); }catch(e){}
+  markSaved();
+}
+
+function loadLocal(){
+  try{
+    var raw = localStorage.getItem(DATA_KEY);
+    if(!raw) return;
+    var d = JSON.parse(raw);
+    ['splash','hero','about','marqueeItems','skills','projects',
+     'experience','certifications','contact','footer'].forEach(function(k){
+      if(d[k] != null) S[k] = d[k];
+    });
+    // Ensure IDs
+    ['skills','projects','experience','certifications'].forEach(function(k){
+      if(Array.isArray(S[k])) S[k] = S[k].map(function(x){ return x.id ? x : Object.assign({id:uid()},x); });
+    });
+  }catch(e){}
+}
+
+// Download data.json — user puts this in same folder as portfolio.html
+function downloadDataJson(){
+  var json = JSON.stringify(S, null, 2);
+  var blob = new Blob([json], {type:'application/json'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'data.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('✓ data.json downloaded — put it next to portfolio.html','ok',4000);
+}
+
+// ── LOCK SCREEN ────────────────────────────────────────────
+(function(){
+  if(!localStorage.getItem('ADMIN_PW')){
+    $('lk-title').textContent = 'SET PASSWORD';
+    $('lk-hint').textContent  = 'First time — choose a password (min 6 chars)';
+    $('lk-btn').textContent   = 'SET PASSWORD';
+  }
+  if(sessionStorage.getItem('ADM_OK')==='1'){ $('lock').classList.add('gone'); boot(); }
+})();
+
+$('lk-btn').addEventListener('click', async function(){
+  var pw = $('lk-pw').value;
+  if(!pw||pw.length<6){ $('lk-err').textContent='Min 6 characters'; return; }
+  var hash = await sha256(pw);
+  var stored = localStorage.getItem('ADMIN_PW');
+  if(!stored){
+    localStorage.setItem('ADMIN_PW', hash);
+    sessionStorage.setItem('ADM_OK','1');
+    $('lock').classList.add('gone'); boot();
+  } else if(hash===stored){
+    sessionStorage.setItem('ADM_OK','1');
+    $('lock').classList.add('gone'); boot();
+  } else {
+    $('lk-err').textContent = 'Wrong password';
+    $('lk-pw').value = '';
+  }
+});
+$('lk-pw').addEventListener('keydown',function(e){ if(e.key==='Enter') $('lk-btn').click(); });
+$('lk-eye').addEventListener('click', function(){ var i=$('lk-pw'); i.type=i.type==='password'?'text':'password'; });
+
+// ── NAVIGATION ─────────────────────────────────────────────
+var _cur = 'hero';
+function navTo(name){
+  document.querySelectorAll('.panel').forEach(function(p){ p.classList.remove('on'); });
+  var panel = $('p-'+name); if(panel) panel.classList.add('on');
+  document.querySelectorAll('.sb-btn,.bn').forEach(function(b){ b.classList.toggle('on', b.dataset.p===name); });
+  $('sidebar').classList.remove('open');
+  $('main').scrollTop = 0;
+  _cur = name;
+  if(name==='hero')    fillHero();
+  if(name==='about')   fillAbout();
+  if(name==='contact') fillContact();
+  if(name==='footer')  fillFooter();
+}
+document.querySelectorAll('.sb-btn').forEach(function(b){ b.addEventListener('click', function(){ navTo(b.dataset.p); }); });
+document.querySelectorAll('.bn').forEach(function(b){ b.addEventListener('click', function(){ navTo(b.dataset.p); }); });
+$('tb-ham').addEventListener('click', function(){ $('sidebar').classList.toggle('open'); });
+$('tb-dl').addEventListener('click', downloadDataJson);
+$('dl-btn').addEventListener('click', downloadDataJson);
+
+// ── FILL FORMS ─────────────────────────────────────────────
+function fillHero(){
+  var h=S.hero;
+  sv('h-first',h.firstName); sv('h-last',h.lastName);
+  sv('h-sub',h.subtitle);    sv('h-title',h.title);
+  sv('h-tag',h.tagline);     sv('h-avail',h.availability);
+  sv('h-glyph',h.glyph);     sv('h-avurl','');
+  var st=h.stats||{};
+  sv('st-pj',st.projects); sv('st-cl',st.clients);
+  sv('st-yr',st.yearsExp); sv('st-km',st.commits);
+  var av=$('av-box');
+  if(av) av.innerHTML = h.avatarUrl ? '<img src="'+h.avatarUrl+'"/>' : '📷';
+}
+function fillAbout(){
+  var ab=S.about;
+  sv('ab-head',ab.heading); sv('ab-bio',ab.bio);
+  sv('ab-pass',ab.passion); sv('ab-foc',ab.focus);
+  renderHLs(); renderMQ();
+}
+function fillContact(){
+  var ct=S.contact;
+  sv('ct-email',ct.email); sv('ct-phone',ct.phone);
+  sv('ct-gh',ct.github);   sv('ct-li',ct.linkedin);
+  sv('ct-tw',ct.twitter);  sv('ct-loc',ct.location);
+}
+function fillFooter(){
+  var ft=S.footer;
+  sv('ft-logo',ft.logo); sv('ft-copy',ft.copyright); sv('ft-tag',ft.tagline);
+  sv('sp-logo',S.splash.logo); sv('sp-tag',S.splash.tagline);
+  renderFTL();
+}
+
+// ── SAVE SECTIONS ──────────────────────────────────────────
+$('save-hero').addEventListener('click', function(){
+  S.hero = {
+    firstName:v('h-first')||'ALEX', lastName:v('h-last')||'NOVA',
+    subtitle:v('h-sub'), title:v('h-title'), tagline:v('h-tag'),
+    availability:v('h-avail'), glyph:v('h-glyph')||'⬡',
+    avatarUrl: S.hero.avatarUrl||'',
+    stats:{ projects:v('st-pj')||0, clients:v('st-cl')||0,
+            yearsExp:v('st-yr')||0, commits:v('st-km')||0 }
+  };
+  var url=v('h-avurl'); if(url&&url.startsWith('http')) S.hero.avatarUrl=url;
+  saveLocal(); showOk('hero-ok'); toast('Hero saved','ok');
+});
+
+$('save-about').addEventListener('click', function(){
+  S.about.heading=v('ab-head')||'ABOUT ME';
+  S.about.bio=v('ab-bio');
+  S.about.passion=v('ab-pass');
+  S.about.focus=v('ab-foc');
+  saveLocal(); showOk('about-ok'); toast('About saved','ok');
+});
+
+$('save-contact').addEventListener('click', function(){
+  S.contact={email:v('ct-email'),phone:v('ct-phone'),github:v('ct-gh'),
+             linkedin:v('ct-li'),twitter:v('ct-tw'),location:v('ct-loc')};
+  saveLocal(); showOk('contact-ok'); toast('Contact saved','ok');
+});
+
+$('save-footer').addEventListener('click', function(){
+  S.footer.logo=v('ft-logo'); S.footer.copyright=v('ft-copy'); S.footer.tagline=v('ft-tag');
+  S.splash={logo:v('sp-logo')||'NOVA', tagline:v('sp-tag'), bg:'#04060f'};
+  saveLocal(); showOk('footer-ok'); toast('Saved','ok');
+});
+
+// ── AVATAR ─────────────────────────────────────────────────
+$('av-box').addEventListener('click', function(){ $('av-file').click(); });
+$('av-file').addEventListener('change', function(e){
+  var file=e.target.files[0]; if(!file) return;
+  var reader=new FileReader();
+  reader.onload=function(ev){
+    S.hero.avatarUrl=ev.target.result;
+    $('av-box').innerHTML='<img src="'+ev.target.result+'"/>';
+    saveLocal(); toast('Photo uploaded','ok');
+  };
+  reader.readAsDataURL(file);
+});
+
+// ── HIGHLIGHTS ─────────────────────────────────────────────
+function renderHLs(){
+  var list=$('hl-list'); if(!list)return;
+  if(!S.about.highlights)S.about.highlights=[];
+  list.innerHTML=S.about.highlights.map(function(h){
+    return '<div class="card"><div class="card-info"><div class="card-name">'+h.label+'</div><div class="card-sub">'+h.value+'</div></div>'
+          +'<button class="del-btn" data-id="'+h.id+'">✕</button></div>';
+  }).join('');
+  list.querySelectorAll('.del-btn').forEach(function(b){
+    b.addEventListener('click',function(){
+      S.about.highlights=S.about.highlights.filter(function(x){return x.id!==b.dataset.id;});
+      renderHLs(); saveLocal();
+    });
+  });
+}
+$('add-hl').addEventListener('click', function(){
+  var lbl=v('hl-lbl'),val=v('hl-val');
+  if(!lbl||!val){toast('Fill both fields','er');return;}
+  if(!S.about.highlights)S.about.highlights=[];
+  S.about.highlights.push({id:uid(),label:lbl,value:val});
+  $('hl-lbl').value=''; $('hl-val').value='';
+  renderHLs(); saveLocal(); toast('Added','ok');
+});
+
+// ── MARQUEE ────────────────────────────────────────────────
+function renderMQ(){
+  var list=$('mq-list'); if(!list)return;
+  list.innerHTML=S.marqueeItems.map(function(kw){
+    return '<div class="card"><div class="card-info"><div class="card-name">'+kw+'</div></div>'
+          +'<button class="del-btn" data-kw="'+kw+'">✕</button></div>';
+  }).join('');
+  list.querySelectorAll('.del-btn').forEach(function(b){
+    b.addEventListener('click',function(){
+      S.marqueeItems=S.marqueeItems.filter(function(k){return k!==b.dataset.kw;});
+      renderMQ(); saveLocal();
+    });
+  });
+}
+$('add-mq').addEventListener('click', function(){
+  var kw=v('mq-kw').toUpperCase(); if(!kw){toast('Enter keyword','er');return;}
+  S.marqueeItems.push(kw); $('mq-kw').value='';
+  renderMQ(); saveLocal(); toast('"'+kw+'" added','ok');
+});
+
+// ── SKILLS ─────────────────────────────────────────────────
+function renderSkills(){
+  var list=$('sk-list'); if(!list)return;
+  list.innerHTML=S.skills.map(function(s){
+    return '<div class="card">'
+          +'<div class="clr-dot" style="background:'+s.color+'"></div>'
+          +'<div class="card-info"><div class="card-name">'+s.name+'</div><div class="card-sub">'+s.category+' · '+s.level+'%</div></div>'
+          +'<button class="del-btn" data-id="'+s.id+'">✕</button></div>';
+  }).join('');
+  list.querySelectorAll('.del-btn').forEach(function(b){
+    b.addEventListener('click',function(){
+      S.skills=S.skills.filter(function(x){return x.id!==b.dataset.id;}); renderSkills(); saveLocal();
+    });
+  });
+}
+$('add-skill').addEventListener('click', function(){
+  var nm=v('sk-name'); if(!nm){toast('Enter skill name','er');return;}
+  S.skills.push({id:uid(),name:nm,category:v('sk-cat')||'General',
+                 level:parseInt(v('sk-lv'))||80,color:v('sk-col')||'#00deb4'});
+  $('sk-name').value=''; $('sk-cat').value=''; $('sk-lv').value='';
+  renderSkills(); saveLocal(); toast('"'+nm+'" added','ok');
+});
+
+// ── PROJECTS ───────────────────────────────────────────────
+function renderProjects(){
+  var list=$('pj-list'); if(!list)return;
+  list.innerHTML=S.projects.map(function(p){
+    return '<div class="card">'
+          +'<div class="clr-dot" style="background:'+p.color+'"></div>'
+          +'<div class="card-info"><div class="card-name">'+p.title+'</div><div class="card-sub">'+p.category+' · '+p.status+'</div></div>'
+          +'<button class="del-btn" data-id="'+p.id+'">✕</button></div>';
+  }).join('');
+  list.querySelectorAll('.del-btn').forEach(function(b){
+    b.addEventListener('click',function(){
+      S.projects=S.projects.filter(function(x){return x.id!==b.dataset.id;}); renderProjects(); saveLocal();
+    });
+  });
+}
+$('add-proj').addEventListener('click', function(){
+  var nm=v('pj-name'); if(!nm){toast('Enter project title','er');return;}
+  var tech=v('pj-tech').split(',').map(function(t){return t.trim();}).filter(Boolean);
+  // Parse metrics: "users:50K+, uptime:99.9%" → {users:'50K+', uptime:'99.9%'}
+  var metrics={};
+  v('pj-met').split(',').forEach(function(pair){
+    var parts=pair.trim().split(':');
+    if(parts.length>=2) metrics[parts[0].trim()]=parts.slice(1).join(':').trim();
+  });
+  S.projects.push({id:uid(),title:nm,subtitle:v('pj-sub'),description:v('pj-desc'),
+    tech:tech,category:v('pj-cat')||'Project',status:v('pj-stat')||'LIVE',
+    year:parseInt(v('pj-year'))||new Date().getFullYear(),
+    color:v('pj-col')||'#00deb4',
+    liveUrl:v('pj-live'),githubUrl:v('pj-gh'),
+    metrics:metrics,
+    featured:$('pj-feat').checked});
+  ['pj-name','pj-sub','pj-desc','pj-cat','pj-stat','pj-year','pj-tech','pj-live','pj-gh','pj-met'].forEach(function(id){$(id)&&($(id).value='');});
+  $('pj-feat').checked=false;
+  renderProjects(); saveLocal(); toast('"'+nm+'" added','ok');
+});
+
+// ── EXPERIENCE ─────────────────────────────────────────────
+function renderExp(){
+  var list=$('ex-list'); if(!list)return;
+  list.innerHTML=S.experience.map(function(e){
+    return '<div class="card"><div class="card-info">'
+          +'<div class="card-name">'+e.role+' @ '+e.company+'</div>'
+          +'<div class="card-sub">'+e.period+'</div></div>'
+          +'<button class="del-btn" data-id="'+e.id+'">✕</button></div>';
+  }).join('');
+  list.querySelectorAll('.del-btn').forEach(function(b){
+    b.addEventListener('click',function(){
+      S.experience=S.experience.filter(function(x){return x.id!==b.dataset.id;}); renderExp(); saveLocal();
+    });
+  });
+}
+$('add-exp').addEventListener('click', function(){
+  var co=v('ex-co'); if(!co){toast('Enter company name','er');return;}
+  S.experience.push({id:uid(),company:co,role:v('ex-role'),period:v('ex-per'),
+    description:v('ex-desc'),highlight:v('ex-hl')});
+  ['ex-co','ex-role','ex-per','ex-desc','ex-hl'].forEach(function(id){$(id)&&($(id).value='');});
+  renderExp(); saveLocal(); toast('Experience added','ok');
+});
+
+// ── CERTIFICATIONS ─────────────────────────────────────────
+function renderCerts(){
+  var list=$('ce-list'); if(!list)return;
+  list.innerHTML=S.certifications.map(function(c){
+    return '<div class="card">'
+          +'<div class="clr-dot" style="background:'+c.color+'"></div>'
+          +'<div class="card-info"><div class="card-name">'+c.title+'</div><div class="card-sub">'+c.issuer+' · '+c.date+'</div></div>'
+          +'<button class="del-btn" data-id="'+c.id+'">✕</button></div>';
+  }).join('');
+  list.querySelectorAll('.del-btn').forEach(function(b){
+    b.addEventListener('click',function(){
+      S.certifications=S.certifications.filter(function(x){return x.id!==b.dataset.id;}); renderCerts(); saveLocal();
+    });
+  });
+}
+$('add-cert').addEventListener('click', function(){
+  var nm=v('ce-title'); if(!nm){toast('Enter cert title','er');return;}
+  S.certifications.push({id:uid(),title:nm,issuer:v('ce-issuer'),date:v('ce-date'),
+    category:v('ce-cat'),credentialId:v('ce-cid'),
+    color:v('ce-col')||'#f0b429',badgeType:v('ce-badge')||'def',image:v('ce-img')});
+  ['ce-title','ce-issuer','ce-date','ce-cat','ce-cid','ce-img'].forEach(function(id){$(id)&&($(id).value='');});
+  renderCerts(); saveLocal(); toast('"'+nm+'" added','ok');
+});
+
+// ── FOOTER LINKS ───────────────────────────────────────────
+function renderFTL(){
+  var list=$('ftl-list'); if(!list)return;
+  if(!S.footer.links)S.footer.links=[];
+  list.innerHTML=S.footer.links.map(function(l){
+    return '<div class="card"><div class="card-info"><div class="card-name">'+l.label+'</div><div class="card-sub">'+l.url+'</div></div>'
+          +'<button class="del-btn" data-id="'+l.id+'">✕</button></div>';
+  }).join('');
+  list.querySelectorAll('.del-btn').forEach(function(b){
+    b.addEventListener('click',function(){
+      S.footer.links=S.footer.links.filter(function(x){return x.id!==b.dataset.id;}); renderFTL(); saveLocal();
+    });
+  });
+}
+$('add-ftl').addEventListener('click', function(){
+  var lbl=v('ftl-lbl'),url=v('ftl-url');
+  if(!lbl||!url){toast('Fill both fields','er');return;}
+  if(!S.footer.links)S.footer.links=[];
+  S.footer.links.push({id:uid(),label:lbl,url:url});
+  $('ftl-lbl').value=''; $('ftl-url').value='';
+  renderFTL(); saveLocal(); toast('Link added','ok');
+});
+
+// ── IMPORT / EXPORT ────────────────────────────────────────
+$('imp-btn').addEventListener('click', function(){ $('imp-file').click(); });
+$('imp-file').addEventListener('change', function(e){
+  var file=e.target.files[0]; if(!file)return;
+  var reader=new FileReader();
+  reader.onload=function(ev){
+    try{
+      var d=JSON.parse(ev.target.result);
+      ['splash','hero','about','marqueeItems','skills','projects',
+       'experience','certifications','contact','footer'].forEach(function(k){
+        if(d[k]!=null)S[k]=d[k];
+      });
+      ['skills','projects','experience','certifications'].forEach(function(k){
+        if(Array.isArray(S[k]))S[k]=S[k].map(function(x){return x.id?x:Object.assign({id:uid()},x);});
+      });
+      saveLocal();
+      renderSkills(); renderProjects(); renderExp(); renderCerts();
+      if(_cur==='hero')fillHero(); if(_cur==='about')fillAbout();
+      if(_cur==='contact')fillContact(); if(_cur==='footer')fillFooter();
+      toast('Imported successfully!','ok',4000);
+    }catch(ex){ toast('Invalid JSON','er'); }
+  };
+  reader.readAsText(file);
+});
+
+// Reset
+$('reset-btn').addEventListener('click', function(){
+  if(!confirm('Delete ALL data? Cannot be undone.'))return;
+  localStorage.removeItem(DATA_KEY); sessionStorage.removeItem('ADM_OK');
+  location.reload();
+});
+
+// Change password
+$('chpw-btn').addEventListener('click', async function(){
+  var old=prompt('Current password:'); if(!old)return;
+  if(await sha256(old)!==localStorage.getItem('ADMIN_PW')){toast('Wrong password','er');return;}
+  var np=prompt('New password (min 6 chars):');
+  if(!np||np.length<6){toast('Too short','er');return;}
+  if(prompt('Confirm new password:')!==np){toast('Passwords do not match','er');return;}
+  localStorage.setItem('ADMIN_PW',await sha256(np));
+  sessionStorage.removeItem('ADM_OK');
+  toast('Password changed — logging out…','ok');
+  setTimeout(function(){location.reload();},1500);
+});
+
+// ── BOOT ───────────────────────────────────────────────────
+function boot(){
+  loadLocal();
+  renderSkills(); renderProjects(); renderExp(); renderCerts();
+  fillHero();
+  markSaved();
+}
+</script>
+</body>
+</html>
